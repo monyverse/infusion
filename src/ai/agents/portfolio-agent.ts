@@ -1,8 +1,8 @@
-import { BaseAgent } from './base-agent';
-import { AgentConfig, PortfolioAllocation, RebalancingStrategy, RiskProfile } from '@/types/ai';
-import { OneInchAPI } from '@/utils/1inch-api';
+const { BaseAgent } = require('./base-agent');
+const { AgentConfig, PortfolioAllocation, RebalancingStrategy, RiskProfile } = require('@/types/ai');
+const { OneInchAPI } = require('@/utils/1inch-api');
 
-export class PortfolioManagerAgent extends BaseAgent {
+class PortfolioManagerAgent extends BaseAgent {
   private oneInchAPI: OneInchAPI;
 
   constructor(config: AgentConfig) {
@@ -370,4 +370,6 @@ export class PortfolioManagerAgent extends BaseAgent {
 
     return trades;
   }
-} 
+}
+
+module.exports = { PortfolioManagerAgent }; 

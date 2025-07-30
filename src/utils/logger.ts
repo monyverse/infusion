@@ -1,6 +1,6 @@
 import winston from 'winston';
 
-export class Logger {
+class Logger {
   private logger: winston.Logger;
   private context: string;
 
@@ -130,4 +130,6 @@ export class Logger {
     const childLogger = new Logger(`${this.context}:${subContext}`);
     return childLogger;
   }
-} 
+}
+
+module.exports = { Logger }; 

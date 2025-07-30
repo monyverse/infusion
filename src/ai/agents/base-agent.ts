@@ -1,12 +1,12 @@
-import { OpenAI } from 'openai';
-import { z } from 'zod';
-import { Logger } from '@/utils/logger';
-import { ChainConfig, AgentConfig, AgentResponse } from '@/types/ai';
+const { OpenAI } = require('openai');
+const { z } = require('zod');
+const { Logger } = require('@/utils/logger');
+const { ChainConfig, AgentConfig, AgentResponse } = require('@/types/ai');
 
-export abstract class BaseAgent {
+abstract class BaseAgent {
   protected openai: OpenAI;
   protected logger: Logger;
-  protected config: AgentConfig;
+  public config: AgentConfig;
   protected chainConfigs: Map<string, ChainConfig>;
 
   constructor(config: AgentConfig) {

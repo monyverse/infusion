@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { Logger } from './logger';
+const { Logger } = require('./logger');
 
 export interface SwapQuoteRequest {
   chain: string;
@@ -65,10 +65,10 @@ export interface FusionPlusRequest {
   deadline: number;
 }
 
-export class OneInchAPI {
+class OneInchAPI {
   private apiKey: string;
   private baseUrl: string;
-  private logger: Logger;
+  private logger: any;
 
   constructor() {
     this.apiKey = process.env.INCH_API_KEY || '';
@@ -398,4 +398,6 @@ export class OneInchAPI {
     ];
     return fusionPlusChains.includes(chain);
   }
-} 
+}
+
+module.exports = { OneInchAPI }; 

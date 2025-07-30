@@ -10,6 +10,14 @@ export interface ChainConfig {
 }
 
 export interface AgentConfig {
+  name: string;
+  description: string;
+  capabilities: string[];
+  walletAddress: string;
+  apiKeys: {
+    openai: string;
+    oneinch: string;
+  };
   maxRetries: number;
   timeout: number;
   enableLogging: boolean;
