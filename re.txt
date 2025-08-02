@@ -1,0 +1,42 @@
+
+Integrating non-EVM chains
+
+PRIMARY GOAL
+
+1. Manage the HTLC and communication between an EVM CHAIN and your non-EVM chain (all CLI/testnet is ok!)
+  - Properly handle hashlock logic
+  - Properly handle contract expiration/reverts
+2. Swaps must bi-directional  
+
+EVM side 
+
+1 inch Escrow Factory <---> 1inch Escrow
+
+<:::::Cross-chain orchestration:::::>
+
+non-EVM side 
+
+implement an escrow contract on whatever non-evm chain
+
+Integrating non-EVM chains
+
+- UI
+- Enable partial fills
+- Relayer and Resolver
+- Base/Abitrum/etc <-> mainnet non-EVM
+
+iNTEGRATION non-EVM chains
+
+- Do not post any orders to 1inch REST APISs
+
+Qualification Requirements: 
+
+- Preserve hashlock and timelock functionality for the non-EVM implementation
+- Swap functionality should be bidirectional (swaps should be possible to and from Ethereum)
+- Onchain (mainnet/L2 or testnet) execution of token transfers should be presented during the final demo (EVM testnets will require the deployment of Limit Order Protocol contracts)
+- 
+Stretch goals (not hard requirements):
+- UI
+- Enable partial fills
+
+

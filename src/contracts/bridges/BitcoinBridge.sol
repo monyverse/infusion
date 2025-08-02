@@ -2,12 +2,10 @@
 pragma solidity ^0.8.20;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
-import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
-import "@openzeppelin/contracts/utils/cryptography/SHA256.sol";
-
 /**
  * @title Bitcoin Bridge
  * @dev Enables atomic swaps between Ethereum and Bitcoin using HTLCs
@@ -16,7 +14,6 @@ import "@openzeppelin/contracts/utils/cryptography/SHA256.sol";
 contract BitcoinBridge is Ownable, ReentrancyGuard {
     using SafeERC20 for IERC20;
     using ECDSA for bytes32;
-    using SHA256 for bytes32;
 
     // Events
     event HTLCCreated(

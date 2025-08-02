@@ -1,0 +1,19 @@
+[package]
+name = "fusion-solver"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+near-sdk = { workspace = true }
+near-contract-standards = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+borsh = { workspace = true }
+borsh-derive = { workspace = true }
+thiserror = { workspace = true }
+
+[dev-dependencies]
+near-sdk = { workspace = true } 

@@ -1,10 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
-import "@openzeppelin/contracts/utils/Counters.sol";
-
 /**
  * @title HTLCFactory
  * @dev Factory contract for creating Hash Time Locked Contracts (HTLCs)
@@ -15,9 +13,7 @@ import "@openzeppelin/contracts/utils/Counters.sol";
  * - Support for partial fills (stretch goal)
  */
 contract HTLCFactory is ReentrancyGuard, Ownable {
-    using Counters for Counters.Counter;
-    
-    Counters.Counter private _htlcIds;
+    uint256 private _htlcIds;
     
     // HTLC struct to store swap details
     struct HTLC {
@@ -109,8 +105,8 @@ contract HTLCFactory is ReentrancyGuard, Ownable {
         require(timelock > block.timestamp, "Timelock must be in the future");
         require(hashlockToHTLC[hashlock] == 0, "Hashlock already exists");
         
-        _htlcIds.increment();
-        uint256 htlcId = _htlcIds.current();
+        _htlcIds++;
+        uint256 htlcId = _htlcIds;
         
         // Handle ETH or ERC20 token
         if (token == address(0)) {
@@ -319,7 +315,7 @@ contract HTLCFactory is ReentrancyGuard, Ownable {
      * @dev Get total HTLC count
      */
     function getTotalHTLCs() external view returns (uint256) {
-        return _htlcIds.current();
+        return _htlcIds;
     }
     
     /**

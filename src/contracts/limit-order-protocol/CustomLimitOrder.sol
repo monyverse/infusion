@@ -4,7 +4,7 @@ pragma solidity ^0.8.20;
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
-import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 
 /**
@@ -69,23 +69,26 @@ contract CustomLimitOrder is Ownable, ReentrancyGuard {
     uint256 public protocolFee = 30; // 0.3% in basis points
     address public feeCollector;
     
-    // Constants
-    bytes32 public constant DOMAIN_SEPARATOR = keccak256(
-        abi.encode(
-            keccak256("EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)"),
-            keccak256(bytes("CustomLimitOrder")),
-            keccak256(bytes("1.0.0")),
-            block.chainid,
-            address(this)
-        )
-    );
+    // Domain separator and order type hash
+    bytes32 public DOMAIN_SEPARATOR;
+    bytes32 public ORDER_TYPEHASH;
 
-    bytes32 public constant ORDER_TYPEHASH = keccak256(
-        "Order(address maker,address makerAsset,address takerAsset,uint256 makerAmount,uint256 takerAmount,uint256 salt,uint256 startTime,uint256 endTime)"
-    );
-
-    constructor(address _feeCollector) {
+    constructor(address _feeCollector) Ownable(msg.sender) {
         feeCollector = _feeCollector;
+        
+        DOMAIN_SEPARATOR = keccak256(
+            abi.encode(
+                keccak256("EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)"),
+                keccak256(bytes("CustomLimitOrder")),
+                keccak256(bytes("1.0.0")),
+                block.chainid,
+                address(this)
+            )
+        );
+
+        ORDER_TYPEHASH = keccak256(
+            "Order(address maker,address makerAsset,address takerAsset,uint256 makerAmount,uint256 takerAmount,uint256 salt,uint256 startTime,uint256 endTime)"
+        );
     }
 
     /**

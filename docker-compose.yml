@@ -1,0 +1,134 @@
+version: '3.8'
+
+services:
+  # Main application
+  uniteai-wallet:
+    build:
+      context: .
+      target: development
+    ports:
+      - "3000:3000"  # Frontend
+      - "3003:3003"  # Backend API
+      - "3004:3004"  # AI Agent Manager
+    volumes:
+      - .:/app
+      - /app/node_modules
+      - /app/.next
+    environment:
+      - NODE_ENV=development
+      - PORT=3003
+    env_file:
+      - env.local
+    depends_on:
+      - redis
+    networks:
+      - uniteai-network
+    restart: unless-stopped
+
+  # Redis for caching and session storage
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - uniteai-network
+    restart: unless-stopped
+    command: redis-server --appendonly yes
+
+  # PostgreSQL for persistent data (optional)
+  postgres:
+    image: postgres:15-alpine
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_DB=uniteai
+      - POSTGRES_USER=uniteai
+      - POSTGRES_PASSWORD=uniteai_password
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - uniteai-network
+    restart: unless-stopped
+
+  # NEAR local node (for testing)
+  near-node:
+    image: nearprotocol/nearcore:latest
+    ports:
+      - "3030:3030"  # RPC
+      - "24567:24567"  # P2P
+    volumes:
+      - near_data:/srv/near
+    environment:
+      - NEAR_ENV=local
+    networks:
+      - uniteai-network
+    restart: unless-stopped
+    command: >
+      neard --home /srv/near run
+      --rpc-addr 0.0.0.0:3030
+      --network-id local
+      --validator
+
+  # Bitcoin node (for testing)
+  bitcoin-node:
+    image: kylemanna/bitcoind:latest
+    ports:
+      - "8332:8332"  # RPC
+      - "8333:8333"  # P2P
+    volumes:
+      - bitcoin_data:/bitcoin/.bitcoin
+    environment:
+      - BITCOIN_RPC_USER=bitcoin
+      - BITCOIN_RPC_PASSWORD=bitcoin_password
+    networks:
+      - uniteai-network
+    restart: unless-stopped
+    command: >
+      bitcoind
+      -rpcuser=bitcoin
+      -rpcpassword=bitcoin_password
+      -rpcallowip=0.0.0.0/0
+      -rpcbind=0.0.0.0
+      -testnet
+      -txindex=1
+      -server=1
+
+  # Monitoring and logging
+  prometheus:
+    image: prom/prometheus:latest
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    networks:
+      - uniteai-network
+    restart: unless-stopped
+
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "3001:3000"
+    volumes:
+      - grafana_data:/var/lib/grafana
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    networks:
+      - uniteai-network
+    restart: unless-stopped
+    depends_on:
+      - prometheus
+
+volumes:
+  redis_data:
+  postgres_data:
+  near_data:
+  bitcoin_data:
+  prometheus_data:
+  grafana_data:
+
+networks:
+  uniteai-network:
+    driver: bridge 

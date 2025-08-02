@@ -1,0 +1,24 @@
+{
+  "name": "bitcoin-cli",
+  "version": "1.0.0",
+  "description": "Bitcoin CLI for HTLC operations and atomic swaps",
+  "main": "cli/bitcoin-cli.ts",
+  "type": "module",
+  "scripts": {
+    "start": "tsx cli/bitcoin-cli.ts",
+    "build": "tsc",
+    "dev": "tsx watch cli/bitcoin-cli.ts"
+  },
+  "dependencies": {
+    "commander": "^11.1.0",
+    "crypto": "^1.0.1"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "tsx": "^4.0.0",
+    "typescript": "^5.0.0"
+  },
+  "bin": {
+    "bitcoin-cli": "./cli/bitcoin-cli.ts"
+  }
+} 

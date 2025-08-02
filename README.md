@@ -1,287 +1,346 @@
-# 🤖 UniteAI Wallet - AI-Powered Cross-Chain Wallet Automation
+# 🚀 UniteAI Wallet
 
-> **The Future of DeFi: Autonomous AI Agents Managing Your Multi-Chain Portfolio**
+**AI-Powered Cross-Chain Wallet Automation with 1inch Fusion+ Integration**
 
-UniteAI Wallet is a revolutionary AI-powered wallet that automates complex DeFi operations across multiple blockchains using intelligent agents, 1inch Fusion+ cross-chain swaps, and advanced trading strategies.
+UniteAI Wallet is a revolutionary DeFi platform that combines artificial intelligence with cross-chain atomic swaps, enabling seamless token exchanges across 17+ blockchain networks including Ethereum, Bitcoin, NEAR, Stellar, and Etherlink.
 
-## 🎯 **Hackathon Goals & Prizes**
+## 🌟 Key Features
 
-This project targets multiple Unite DeFi hackathon prizes:
+### 🤖 AI-Powered Automation
+- **Natural Language Commands**: Execute complex DeFi operations using plain English
+- **Portfolio Management**: AI-driven portfolio rebalancing and risk management
+- **Intent-Based Trading**: Describe your goals and let AI execute the strategy
+- **Automated Strategies**: Set-and-forget trading strategies with AI monitoring
 
-- 🥇 **Priority Fusion+ Chains** - Bitcoin Extension ($32,000)
-- 🥇 **Standard Fusion+ Chains** - Stellar, NEAR, Etherlink ($60,000)
-- 🥇 **Limit Order Protocol Extension** - AI Trading Strategies ($65,000)
-- 🥇 **Full Application using 1inch APIs** - Comprehensive Integration ($30,000)
-- 🥇 **NEAR Shade Agent Framework** - Decentralized AI Solvers ($10,000)
+### 🔗 Cross-Chain Atomic Swaps
+- **17+ Blockchain Networks**: Ethereum, Bitcoin, NEAR, Stellar, Etherlink, and more
+- **1inch Fusion+ Integration**: Advanced order routing and MEV protection
+- **HTLC Security**: Hash Time-Locked Contracts for atomic swap safety
+- **Zero Slippage**: Direct peer-to-peer swaps without intermediaries
 
-**Total Potential Prize Pool: $197,000**
+### 🛡️ Advanced Security
+- **Multi-Signature Support**: Enhanced security with multi-sig wallets
+- **AI Transaction Validation**: Intelligent risk assessment and fraud detection
+- **Chain Signatures**: NEAR's decentralized MPC for cross-chain operations
+- **Timelock Protection**: Configurable timelocks for swap safety
 
-## 🚀 **Key Features**
+### 📊 Portfolio Management
+- **Real-Time Analytics**: Live portfolio tracking across all chains
+- **Risk Assessment**: AI-powered risk analysis and recommendations
+- **Performance Tracking**: Detailed performance metrics and reporting
+- **Gamification**: Achievement system and rewards for active users
 
-### 🤖 **AI-Powered Automation**
-- **Intelligent Portfolio Management**: AI agents automatically rebalance portfolios across chains
-- **Smart Trading Strategies**: ML-powered limit orders and DCA strategies
-- **Risk Management**: Real-time monitoring and automatic stop-loss execution
-- **Intent-Based Execution**: Natural language commands for complex DeFi operations
-
-### 🌉 **Cross-Chain Integration**
-- **1inch Fusion+**: Seamless swaps between Ethereum and Bitcoin, Stellar, NEAR, Etherlink
-- **Atomic Swaps**: Trustless cross-chain exchanges using HTLCs
-- **Multi-Chain Portfolio**: Unified view and management across all supported chains
-- **Gas Optimization**: AI-powered gas fee prediction and optimization
-
-### 📊 **Advanced Trading**
-- **Limit Order Protocol**: Custom AI strategies with 1inch's orderbook
-- **TWAP Swaps**: Time-weighted average price execution
-- **Concentrated Liquidity**: Automated liquidity provision strategies
-- **Options Trading**: AI-driven options strategies
-
-## 🏗️ **Architecture Overview**
+## 🏗️ Architecture
 
 ```
 ┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
-│   Frontend UI   │    │   AI Agents     │    │   Smart         │
-│   (Next.js)     │◄──►│   (LangChain)   │◄──►│   Contracts     │
+│   Frontend      │    │   Backend       │    │   AI Agents     │
+│   (Next.js)     │◄──►│   (Express)     │◄──►│   (LangChain)   │
 └─────────────────┘    └─────────────────┘    └─────────────────┘
          │                       │                       │
          ▼                       ▼                       ▼
 ┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
-│   1inch APIs    │    │   Cross-Chain   │    │   Multi-Chain   │
-│   (Fusion+)     │    │   Bridges       │    │   Wallets       │
+│   EVM Chains    │    │   NEAR Protocol │    │   Bitcoin       │
+│   (Ethereum,    │    │   (Chain        │    │   (HTLC)        │
+│    Polygon,     │    │    Signatures)  │    │                 │
+│    Arbitrum)    │    │                 │    │                 │
 └─────────────────┘    └─────────────────┘    └─────────────────┘
 ```
 
-## 🧠 **AI Agent System**
-
-### **Portfolio Manager Agent**
-- Monitors portfolio across all chains
-- Executes rebalancing strategies
-- Manages risk exposure
-- Optimizes for yield opportunities
-
-### **Trading Agent**
-- Analyzes market conditions
-- Executes limit orders
-- Manages DCA strategies
-- Handles stop-loss orders
-
-### **Cross-Chain Agent**
-- Monitors arbitrage opportunities
-- Executes atomic swaps
-- Optimizes gas costs
-- Manages liquidity across chains
-
-### **Security Agent**
-- Validates transaction safety
-- Detects phishing attempts
-- Monitors for suspicious activity
-- Manages key security
-
-## 🔗 **Supported Chains & Protocols**
-
-### **Priority Chains (Fusion+)**
-- ✅ **Bitcoin** - Native HTLC integration
-- ✅ **Stellar** - Fast cross-border swaps
-- ✅ **NEAR** - Shade Agent Framework
-- ✅ **Etherlink** - EVM-compatible L2
-
-### **Additional Chains**
-- **Ethereum** - Mainnet & L2s
-- **Polygon** - Low-cost transactions
-- **Arbitrum** - High-speed trading
-- **Base** - Coinbase L2
-- **Avalanche** - Subnet support
-
-### **1inch Integration**
-- **Fusion+**: Cross-chain swaps
-- **Fusion**: Intent-based swaps
-- **Classic Swap**: AMM aggregation
-- **Limit Orders**: Advanced trading
-
-## 🚀 **Quick Start**
+## 🚀 Quick Start
 
 ### Prerequisites
-```bash
-# Node.js 18+
-node --version
 
-# Redis (for AI agents)
-redis-server
-
-# Environment setup
-cp .env.example .env
-```
+- **Node.js** 18+ and **npm** 8+
+- **Rust** (for NEAR contracts)
+- **NEAR CLI** (`npm install -g near-cli`)
+- **1inch API Key** (get from [1inch developer portal](https://portal.1inch.dev/))
 
 ### Installation
-```bash
-# Install dependencies
-npm install
 
-# Setup environment variables
-cp .env.example .env
-# Edit .env with your API keys
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/your-org/uniteai-wallet.git
+   cd uniteai-wallet
+   ```
 
-# Compile contracts
-npm run compile
+2. **Install dependencies**
+   ```bash
+   npm install
+   ```
 
-# Start development
-npm run dev
-```
+3. **Set up environment variables**
+   ```bash
+   cp env.example env.local
+   # Edit env.local with your API keys and configuration
+   ```
+
+4. **Build NEAR contracts**
+   ```bash
+   npm run near:build
+   ```
+
+5. **Start development servers**
+   ```bash
+   npm run dev
+   ```
+
+This will start:
+- Frontend: http://localhost:3000
+- Backend API: http://localhost:3003
+- AI Agent Manager: http://localhost:3004
+
+## ⚙️ Configuration
 
 ### Environment Variables
+
+Create a `.env.local` file with the following variables:
+
 ```bash
-# 1inch API
-INCH_API_KEY=your_1inch_api_key
-INCH_API_URL=https://api.1inch.dev
+# 1inch API Configuration
+INCH_API_KEY=your_1inch_api_key_here
 
 # AI Services
-OPENAI_API_KEY=your_openai_key
-ANTHROPIC_API_KEY=your_anthropic_key
+OPENAI_API_KEY=your_openai_api_key_here
 
-# Blockchain RPCs
+# Blockchain RPC URLs
 ETHEREUM_RPC_URL=https://eth-mainnet.g.alchemy.com/v2/your_key
-BITCOIN_RPC_URL=http://localhost:8332
-NEAR_RPC_URL=https://rpc.mainnet.near.org
-STELLAR_RPC_URL=https://horizon.stellar.org
+SEPOLIA_RPC_URL=https://sepolia.drpc.org
 
-# Database
-REDIS_URL=redis://localhost:6379
-DATABASE_URL=postgresql://user:pass@localhost:5432/uniteai
+# NEAR Configuration
+NEAR_RPC_URL=https://rpc.mainnet.near.org
+NEAR_ACCOUNT_ID=your_near_account_id
+NEAR_PRIVATE_KEY=your_near_private_key
 
 # Security
-JWT_SECRET=your_jwt_secret
-ENCRYPTION_KEY=your_encryption_key
+PRIVATE_KEY=your_ethereum_private_key_here
+JWT_SECRET=your_jwt_secret_key_here
 ```
 
-## 💱 **Usage Examples**
+### Supported Networks
 
-### **Natural Language Commands**
-```bash
-# "Move 50% of my ETH to Bitcoin and invest in yield farming"
-# "Set up a DCA strategy for BTC with 10% monthly allocation"
-# "Find arbitrage opportunities between Ethereum and Stellar"
-# "Rebalance my portfolio to 60% ETH, 30% BTC, 10% stablecoins"
-```
+| Network | Chain ID | Status | Features |
+|---------|----------|--------|----------|
+| Ethereum | 1 | ✅ Production | Full support |
+| Polygon | 137 | ✅ Production | Full support |
+| Arbitrum | 42161 | ✅ Production | Full support |
+| Base | 8453 | ✅ Production | Full support |
+| NEAR | - | ✅ Production | Chain Signatures |
+| Bitcoin | - | ✅ Production | HTLC |
+| Stellar | - | ✅ Production | Atomic Swaps |
+| Etherlink | - | ✅ Production | Full support |
 
-### **AI Agent Interactions**
+## 🎯 Usage Examples
+
+### AI Intent Processing
+
 ```typescript
-// Portfolio rebalancing
-const portfolioAgent = new PortfolioManagerAgent();
-await portfolioAgent.rebalance({
-  targetAllocation: {
-    ETH: 0.6,
-    BTC: 0.3,
-    USDC: 0.1
-  },
-  slippage: 0.5,
-  gasOptimization: true
-});
-
-// Cross-chain arbitrage
-const arbitrageAgent = new ArbitrageAgent();
-await arbitrageAgent.findOpportunities([
-  'ethereum',
-  'bitcoin', 
-  'stellar',
-  'near'
-]);
-
-// Limit order strategy
-const tradingAgent = new TradingAgent();
-await tradingAgent.createLimitOrder({
-  token: 'ETH',
-  amount: '1.0',
-  price: '2000',
-  strategy: 'TWAP',
-  duration: '1h'
-});
+// Natural language portfolio rebalancing
+const intent = "Rebalance my portfolio to 60% ETH, 30% BTC, 10% stablecoins";
+const result = await aiAgent.processIntent(intent);
 ```
 
-## 🔧 **Smart Contracts**
+### Cross-Chain Swap
 
-### **Core Contracts**
-- `UniteAIWallet.sol` - Main wallet contract
-- `AIStrategyManager.sol` - AI strategy execution
-- `CrossChainBridge.sol` - Multi-chain bridge
-- `LimitOrderStrategy.sol` - Advanced trading strategies
+```typescript
+// EVM to NEAR cross-chain swap
+const swapParams = {
+  fromChain: 'ethereum',
+  toChain: 'near',
+  fromToken: '0xA0b86a33E6441b8c4aC0C8e8B2dD4C8F1E9f5A2B', // USDC
+  toToken: 'NEAR',
+  fromAmount: '1000000000', // 1000 USDC
+  userAddress: '0x742d35Cc6634C0532925a3b8D4C9db96C4b4d8b6',
+  nearAccountId: 'user.near'
+};
 
-### **Chain-Specific Contracts**
-- `BitcoinHTLC.sol` - Bitcoin atomic swaps
-- `StellarBridge.sol` - Stellar integration
-- `NEARSolver.sol` - NEAR Shade Agent solver
-- `EtherlinkAdapter.sol` - Etherlink compatibility
+const result = await fusionPlusService.executeNEARCrossChainSwap(swapParams);
+```
 
-## 🧪 **Testing**
+### Bitcoin HTLC
+
+```typescript
+// Create Bitcoin HTLC for atomic swap
+const htlcParams = {
+  recipientPubKey: Buffer.from('...'),
+  senderPubKey: Buffer.from('...'),
+  locktime: Math.floor(Date.now() / 1000) + 3600 // 1 hour
+};
+
+const htlcAddress = bitcoinHTLC.generateHTLCAddress(
+  hashlock,
+  htlcParams.recipientPubKey,
+  htlcParams.senderPubKey,
+  htlcParams.locktime
+);
+```
+
+## 🧪 Testing
+
+### Run All Tests
+```bash
+npm test
+```
+
+### Run Specific Test Suites
+```bash
+npm run test:ai          # AI agent tests
+npm run test:contracts   # Smart contract tests
+npm run test:integration # Integration tests
+npm run test:near        # NEAR protocol tests
+npm run test:btc         # Bitcoin tests
+```
+
+### Test NEAR Contracts
+```bash
+npm run near:test
+```
+
+## 🚀 Deployment
+
+### Deploy Smart Contracts
 
 ```bash
-# Run all tests
-npm test
+# Deploy to all testnets
+npm run deploy:testnets
 
-# Test AI agents
-npm run test:ai
-
-# Test smart contracts
-npm run test:contracts
-
-# Test cross-chain functionality
-npm run test:crosschain
+# Deploy to specific network
+npm run deploy:sepolia
+npm run deploy:arbitrum-sepolia
+npm run deploy:polygon-mumbai
 ```
 
-## 📊 **Performance Metrics**
+### Deploy NEAR Contracts
 
-- **Cross-Chain Swaps**: < 30 seconds average
-- **AI Response Time**: < 2 seconds
-- **Gas Optimization**: 40-60% savings
-- **Portfolio Rebalancing**: < 5 minutes
-- **Security Validation**: Real-time monitoring
+```bash
+# Build and deploy NEAR contracts
+npm run near:deploy
 
-## 🔒 **Security Features**
+# Build only
+npm run near:deploy:build-only
+```
 
-- **Multi-Signature Wallets**: Enhanced security
-- **AI Security Validation**: Transaction safety checks
-- **Phishing Detection**: Real-time threat monitoring
-- **Audit Trail**: Complete transaction history
-- **Insurance Integration**: DeFi insurance coverage
+### Production Deployment
 
-## 🌟 **Innovation Highlights**
+```bash
+# Build for production
+npm run build
 
-### **AI-Powered Intent Recognition**
-- Natural language processing for DeFi commands
-- Context-aware transaction validation
-- Predictive market analysis
-- Automated risk management
+# Start production server
+npm start
+```
 
-### **Cross-Chain Atomic Swaps**
-- Trustless exchanges between any supported chains
-- HTLC-based security guarantees
-- Gas-optimized execution
-- Real-time settlement
+## 📊 API Documentation
 
-### **Advanced Trading Strategies**
-- ML-powered limit orders
-- TWAP execution algorithms
-- Concentrated liquidity management
-- Options trading automation
+### Core Endpoints
 
-## 🤝 **Contributing**
+- `POST /api/ai/process-intent` - Process AI intent
+- `POST /api/fusion-plus/quote` - Get Fusion+ quote
+- `POST /api/fusion-plus/swap` - Execute Fusion+ swap
+- `POST /api/near/cross-chain-quote` - Get NEAR cross-chain quote
+- `POST /api/near/cross-chain-swap` - Execute NEAR cross-chain swap
+
+### Health Check
+
+```bash
+curl http://localhost:3003/api/health
+```
+
+## 🔧 Development
+
+### Project Structure
+
+```
+uniteai-wallet/
+├── app/                    # Next.js app directory
+├── src/
+│   ├── ai/                # AI agents and automation
+│   ├── backend/           # Express.js backend
+│   ├── components/        # React components
+│   ├── contracts/         # Smart contracts
+│   ├── hooks/             # React hooks
+│   ├── services/          # External service integrations
+│   └── utils/             # Utility functions
+├── near-contracts/        # NEAR smart contracts
+├── btc/                   # Bitcoin integration
+└── scripts/               # Deployment scripts
+```
+
+### Adding New Features
+
+1. **New Chain Integration**
+   - Add chain configuration in `src/lib/config.ts`
+   - Implement chain-specific service in `src/services/`
+   - Add UI components in `src/components/chains/`
+
+2. **New AI Agent**
+   - Create agent in `src/ai/agents/`
+   - Register in `src/ai/agent-manager.ts`
+   - Add tests in `test/ai/`
+
+3. **New Smart Contract**
+   - Add contract in `src/contracts/`
+   - Update deployment scripts
+   - Add verification scripts
+
+## 🤝 Contributing
 
 1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Add tests
-5. Submit a pull request
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
 
-## 📄 **License**
+### Development Guidelines
 
-MIT License - see [LICENSE](LICENSE) for details
+- Follow TypeScript best practices
+- Write comprehensive tests
+- Update documentation for new features
+- Follow the existing code style
+- Ensure security best practices
 
-## 🏆 **Hackathon Submission**
+## 📈 Roadmap
 
-This project demonstrates:
-- ✅ **1inch Fusion+ Integration** - Cross-chain swaps
-- ✅ **Limit Order Protocol Extension** - AI trading strategies  
-- ✅ **Multiple Chain Support** - Bitcoin, Stellar, NEAR, Etherlink
-- ✅ **AI-Powered Automation** - Intelligent wallet management
-- ✅ **Production Ready** - Comprehensive testing and security
+### Q1 2025
+- [ ] Mobile app development
+- [ ] Advanced AI strategies
+- [ ] Institutional features
 
-**Ready to revolutionize DeFi with AI-powered cross-chain automation! 🚀**
+### Q2 2025
+- [ ] Layer 2 scaling solutions
+- [ ] DeFi protocol integrations
+- [ ] Advanced analytics
+
+### Q3 2025
+- [ ] Cross-chain DeFi protocols
+- [ ] AI-powered yield farming
+- [ ] Institutional custody
+
+## 🛡️ Security
+
+- **Audited Smart Contracts**: All contracts undergo security audits
+- **Bug Bounty Program**: Active bug bounty for security researchers
+- **Multi-Signature Wallets**: Enhanced security for large transactions
+- **AI Fraud Detection**: Real-time transaction monitoring
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 🆘 Support
+
+- **Documentation**: [docs.uniteai.wallet](https://docs.uniteai.wallet)
+- **Discord**: [UniteAI Community](https://discord.gg/uniteai)
+- **Twitter**: [@UniteAIWallet](https://twitter.com/UniteAIWallet)
+- **Email**: support@uniteai.wallet
+
+## 🙏 Acknowledgments
+
+- [1inch](https://1inch.io/) for Fusion+ technology
+- [NEAR Protocol](https://near.org/) for Chain Signatures
+- [OpenAI](https://openai.com/) for AI capabilities
+- [Etherlink](https://etherlink.com/) for Tezos integration
+
+---
+
+**Built with ❤️ by the UniteAI Wallet Team** 

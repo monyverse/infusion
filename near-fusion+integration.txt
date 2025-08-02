@@ -1,0 +1,105 @@
+1. Bounty Integrating Fusion plus to NEAR
+
+Requirements:
+
+1. Preserve hashlock and timelock functionality for the non-EVM implementation
+2. Swap functionality should be bidirectional (swaps should be possible to and form Ethereum)
+3. Onchain execution of token transfers
+
+Add-on requirements:
+
+• UI
+• Enable partial fills
+• Relayer and resolver
+
+Translating Requirements into Concepts
+
+1. Creating a NEAR Smart Contract: Cargo NEAR, cargo near -> cargo test ->  cargo near -> create-dev-account -> cargo near deploy 
+
+recommendations: workspace test for fungible contract + my contract
+
+2. Timestamp in contracts related to Timelock Functionality: -> env::block_timestamp -> env::block_timestamp_ms -> VMContextBuilder::block_timestamp -> sandbox.fast_forward(100).await?;
+
+
+3. Handling Fungible Tokens  Involves Swapping 
+ 
+Registering in an FT Contract: 
+
+await wallet.callMethod({ method: 'storage_deposit', args:  { account_id: 'alice.near', }, contractId: TOKEN_CONTRACT_ADDRESS, deposit: 1250000000000000000000, });
+
+Accepting Fungible Token transfers in a contract:
+
+pub fn ft_on_transfer(&mut self, _sender_id: AccountId, _amount: U128, _msg: String) -> U128 {
+// Check if the token is supported
+let ft = env::predecessor_account_id();
+require!(ft == self.ft_contract, "The token is not supported");
+
+// Record the transfer
+
+U128(0)
+}
+
+await wallet.callMethod({ method: 'ft_transfer_call', args:  { receiver_id: 'v2.ref-finance.near', amount: '1000000000000', msg: '', }, contractId: TOKEN_CONTRACT_ADDRESS, gas: 30000000000, deposit: 1, });
+
+Transferring Fungible Tokens from a contract
+
+#[ext_contact(ft_contract)]
+trait FT { 
+       fn ft_transfer(&self, receiver_id: AccountId, amount: U128)
+}
+
+ft_contract::ext(self.ft_contract.clone())
+         .with_attached_deposit(NearToken::from_yoctonear(1))
+         .with_static_gas(Gas::from_tgas(30))
+         .ft_transfer(self.auctioneer.clone(), self.highest_bid.bid);
+
+Fungible Tokens: request testnet fungible tokens
+
+4. Interacting with Contracts - Demo
+
+OPTIONS: 1. Wallet Selector(using a wallet from frontend) 2. near-api-js 3.NEAR CLI
+
+The Wallet Selector
+
+- Interact with contracts with a NEAR wallet
+- Sample frontend -> npx create-near-app@latest
+
+2. Decentralized Solver Bounty
+
+- Fusion+ operates on a system solvers to fill orders
+- A decentralized solver is not controlled by an individual and works according to verifiable code
+- Stops solver from rugging funds
+- Allows anyone to provide liquidity tio a solver without trusting the solver
+- Solvers no longer needs lots of up front liquidity
+
+NEAR Intents Example Solver
+
+- NEAR Intents is similar infrastructure to Fusion+
+- Example solver uses NEAR's Shade Agent Framework
+- Solver runs in Trusted Execution Environments on Phala Cloud
+   * Tamper proof and verifiable
+- Solver agents running in a TEE and using the correct code can register in a NEAR smart contract to become a valid solver
+- Users can provide liquidity to solvers via pools
+
+- Example repos: consists of a solver deployer/manager, pool contract, and solvers.
+- MAIN TASK: modify repo or start fresh to adapt the solver to work for Fusion+ 
+
+
+Bounty Requirements
+
+- Your solver mist listen for quote requests (mocked or real)
+- Produce valid 1inch Fusion meta-orders using NEAR's Chain Signatures
+- Include comprehensive documentation with setup instructions, and demonstrate end-to-end functionality.
+- Bonus points for modular architecture that extends to other protocols
+
+NEAR's Chain Signatures for Signing
+ 
+ A method for signing transactions or signing random meessages, arbitrary messages with a decentralized MPC network with a load of different nodes jointly signinig messages and no one is really holding 1 key,
+
+Providing Liquidity
+
+- Users should be able to provide liquidity to your solver
+- The example you provide liquidity to pools on a NEAR contract
+- Change this liquidity provision to how you like
+
+

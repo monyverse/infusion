@@ -1,0 +1,156 @@
+# 🔁 EVM ↔ L1 Atomic Swap Scaffolding Guide
+
+This scaffold covers high-level architecture and implementation paths to build atomic swaps (e.g., HTLC-style or equivalents) from EVM-compatible chains to 15 different L1 chains.
+
+---
+
+## ✅ Common Requirements
+- **Secret preimage (hashlock)**: Shared across both chains
+- **Timelock logic**: Enforces refundability if not redeemed in time
+- **Swap lifecycle**:
+  1. Lock (sender)
+  2. Reveal/redeem (receiver)
+  3. Refund (after timeout)
+
+## 🔧 CLI & Offchain
+Use `HTLC` or build your own command-line tool with:
+- Secret generation
+- Swap monitoring
+- Transaction submission
+- Refund support
+
+---
+
+## 🔁 Chain-by-Chain Swap Scaffold
+
+### 1. **Sui (Move)**
+- **HTLC type**: Custom shared-object escrow
+- **Tools**: `sui-move`, `sui` CLI
+- **Contract**: Create a module with:
+  - `lock(preimage_hash, amount, expiry)`
+  - `redeem(preimage)`
+  - `refund()`
+- **Example**: [Sui Trustless Swap Guide](https://docs.sui.io/guides/developer/app-examples/trustless-swap)
+
+### 2. **Aptos (Move)**
+- Same structure as Sui but using `aptos-move`
+- Ensure global object control for access restrictions
+- Aptos-specific APIs for submitting tx
+
+### 3. **Bitcoin forks (BCH, LTC, DOGE)**
+- **HTLC**: UTXO script-based
+- **Languages**: Script
+- Use `OP_HASH160`, `OP_CHECKLOCKTIMEVERIFY`
+- **Tools**: BitcoinJS, Electrum, `bcoin`
+- Script template:
+```script
+OP_IF
+  <receiver_pubkey> OP_CHECKSIGVERIFY
+  <hashlock> OP_EQUALVERIFY
+OP_ELSE
+  <locktime> OP_CHECKLOCKTIMEVERIFY OP_DROP
+  <sender_pubkey> OP_CHECKSIGVERIFY
+OP_ENDIF
+```
+
+### 4. **Tron**
+- **HTLC**: Smart contracts using Solidity (Tron VM)
+- Use `tronweb` or `tronpy`
+- Clone your EVM HTLC with TRC20 tokens
+
+### 5. **TON**
+- Use [FunC language](https://ton.org/docs/develop/func/overview)
+- Use a contract that locks funds until hashlock + timelock passed
+- Explorer: [Tonviewer](https://tonviewer.com/)
+
+### 6. **Monad** *(Upcoming)*
+- EVM-compatible — reuse your Solidity HTLC
+- Monitor releases: [Monad Labs](https://monad.xyz)
+
+### 7. **NEAR**
+- Use Chain Signatures or [NEAR HTLC examples](https://docs.near.org/chain-abstraction/chain-signatures)
+- Rust contracts or JS SDK
+- Redeem function reveals preimage
+
+### 8. **Starknet**
+- Cairo smart contract with HTLC behavior
+- Hashlock (keccak or poseidon)
+- Timelock via block.timestamp
+- Use `starknet.js` or `starknet.py`
+
+### 9. **Cardano**
+- Plutus smart contract (Haskell)
+- Use `ScriptContext` to enforce deadlines
+- Time constraints via `slotRange`
+- Use `cardano-cli`, `plutus-apps`
+
+### 10. **Stellar**
+- **HTLC**: Conditional accounts + `preimage` hashlock
+- Use [Stellar Preauthorized Transactions](https://developers.stellar.org/docs/fundamentals/transactions/#pre-authorized-transactions)
+- Stellar SDKs for signing
+
+### 11. **XRP Ledger**
+- Use EscrowFinish + crypto-conditions
+- **Native support for HTLC** via Escrow + HashX
+- Docs: [XRP Escrow](https://xrpl.org/escrow.html)
+
+### 12. **ICP (Internet Computer)**
+- **HTLC**: Motoko / Rust canister with hashlock + expiry
+- Use `ic-cdk` to write actor logic
+
+### 13. **Tezos**
+- Michelson smart contracts
+- Libraries: `ligo`, `SmartPy`
+- Use `NOW`, `SHA256` and `IF` branches
+
+### 14. **Polkadot**
+- Write a custom pallet or ink! smart contract (WASM)
+- Use hashlock logic and chain timestamp
+- Substrate-based
+
+### 15. **EOS**
+- EOSIO smart contract (C++)
+- Use block time and secret hash
+- Use `eosjs` or cleos
+
+### 16. **Cosmos / IBC**
+- Use IBC + relayers + ICS20 tokens
+- Or build a Cosmos-SDK HTLC module
+- Libraries: `ibc-go`, `cosmos-sdk`
+- See [IBC HTLC module](https://github.com/irisnet/coinswap)
+
+---
+
+## 🧰 Cross-Chain CLI Design (Minimal)
+```bash
+HTLC \
+  --from evm \
+  --to sui \
+  --amount 10 \
+  --hash abc123... \
+  --refund-time 7200
+```
+
+---
+
+## 📁 Suggested Folder Structure
+```bash
+atomic-swap-protocol/
+├── contracts/
+│   ├── evm/
+│   ├── sui/
+│   ├── aptos/
+│   ├── starknet/
+│   └── ...
+├── cli/
+│   └── index.ts
+├── docs/
+│   └── chains.md
+├── examples/
+│   └── evm-to-near-swap.md
+└── README.md
+```
+
+---
+
+Would you like code samples next (e.g. Cairo, Move, Michelson, or Cosmos HTLC)?

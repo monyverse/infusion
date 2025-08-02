@@ -23,6 +23,18 @@ cache/
 artifacts/
 typechain-types/
 
+# NEAR Contracts
+near-contracts/target/
+near-contracts/**/target/
+near-contracts/**/Cargo.lock
+near-contracts/**/Cargo.toml.lock
+
+# Rust
+**/target/
+**/Cargo.lock
+**/*.rs.bk
+**/*.pdb
+
 # Logs
 logs/
 *.log
@@ -127,4 +139,167 @@ coverage/
 docs/build/
 
 # Local development
-.local/ 
+.local/
+
+# Bitcoin
+btc/wallets/
+btc/keys/
+btc/*.key
+btc/*.dat
+
+# EVM Contracts
+evm/artifacts/
+evm/cache/
+evm/coverage/
+evm/coverage.json
+
+# TypeScript
+*.tsbuildinfo
+tsconfig.tsbuildinfo
+
+# Docker
+.dockerignore
+docker-compose.override.yml
+
+# Monitoring
+prometheus_data/
+grafana_data/
+
+# Local NEAR node
+near-data/
+near-node/
+
+# Local Bitcoin node
+bitcoin-data/
+.bitcoin/
+
+# Backup files
+*.bak
+*.backup
+*.old
+
+# Lock files (keep package-lock.json but ignore others)
+yarn.lock
+pnpm-lock.yaml
+
+# IDE specific
+.vscode/settings.json
+.vscode/launch.json
+.vscode/tasks.json
+.idea/workspace.xml
+.idea/tasks.xml
+
+# OS specific
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# Temporary files
+*.tmp
+*.temp
+*~
+
+# Compiled contracts
+*.wasm
+*.wasm.gz
+*.abi.json
+*.abi.zst
+
+# NEAR specific
+.near-credentials/
+.near/
+near-cli-config.json
+
+# Flow specific
+flow-credentials/
+flow-keys/
+
+# Stellar specific
+stellar-keys/
+stellar-credentials/
+
+# Aptos specific
+aptos-keys/
+aptos-credentials/
+
+# Sui specific
+sui-keys/
+sui-credentials/
+
+# Tron specific
+tron-keys/
+tron-credentials/
+
+# Cosmos specific
+cosmos-keys/
+cosmos-credentials/
+
+# TON specific
+ton-keys/
+ton-credentials/
+
+# Monad specific
+monad-keys/
+monad-credentials/
+
+# Starknet specific
+starknet-keys/
+starknet-credentials/
+
+# Cardano specific
+cardano-keys/
+cardano-credentials/
+
+# XRP Ledger specific
+xrp-keys/
+xrp-credentials/
+
+# Internet Computer specific
+ic-keys/
+ic-credentials/
+
+# Tezos specific
+tezos-keys/
+tezos-credentials/
+
+# Polkadot specific
+polkadot-keys/
+polkadot-credentials/
+
+# AI/ML specific
+ai/models/
+ai/cache/
+ai/training-data/
+ai/checkpoints/
+
+# Backend specific
+backend/logs/
+backend/uploads/
+backend/temp/
+
+# Frontend specific
+src/.next/
+src/out/
+src/dist/
+
+# Scripts output
+scripts/output/
+scripts/logs/
+
+# Test artifacts
+test/artifacts/
+test/coverage/
+test/results/
+
+# Deployment artifacts
+deployments/
+deploy-artifacts/
+
+# Configuration backups
+config.backup/
+config.old/
+
+# Local development data
+local-data/
+dev-data/ 

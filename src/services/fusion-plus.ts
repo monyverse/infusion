@@ -1,493 +1,547 @@
-const { ChainConfig, CrossChainSwap, SwapRoute } = require('../types/chains');
-const { OneInchAPI } = require('../utils/1inch-api');
-const { Logger } = require('../utils/logger');
+import { ethers } from 'ethers';
+import { FusionSDK } from '@1inch/fusion-sdk';
+import { NEARService, NEAR_CONFIGS, NEARFusionOrder } from './near-service';
+
+export interface FusionPlusConfig {
+  apiKey: string;
+  chainId: number;
+  privateKey: string;
+  rpcUrl: string;
+}
+
+export interface SwapQuote {
+  fromToken: string;
+  toToken: string;
+  fromAmount: string;
+  toAmount: string;
+  price: string;
+  gasEstimate: string;
+  protocols: string[];
+  tx?: {
+    to: string;
+    data: string;
+    value: string;
+    gasLimit: string;
+  };
+}
+
+export interface CrossChainSwapParams {
+  fromChainId: number;
+  toChainId: number;
+  fromToken: string;
+  toToken: string;
+  fromAmount: string;
+  toAmount: string;
+  userAddress: string;
+  deadline?: number;
+}
+
+export interface NEARCrossChainSwapParams {
+  fromChain: 'ethereum' | 'polygon' | 'arbitrum' | 'base';
+  toChain: 'near';
+  fromToken: string;
+  toToken: string;
+  fromAmount: string;
+  toAmount: string;
+  userAddress: string;
+  nearAccountId: string;
+  deadline?: number;
+  timelock?: number;
+}
+
+export interface OrderStatus {
+  orderHash: string;
+  status: 'pending' | 'filled' | 'cancelled' | 'expired';
+  filledAmount?: string;
+  remainingAmount?: string;
+  timestamp: number;
+}
 
 export class FusionPlusService {
-  private logger: any;
-  private oneInchAPI: any;
-  private supportedChains: Map<string, any>;
+  private provider: ethers.JsonRpcProvider;
+  private wallet: ethers.Wallet;
+  private config: FusionPlusConfig;
+  private apiKey: string;
+  private fusionSDK: FusionSDK;
+  private nearService: NEARService | null = null;
 
-  constructor() {
-    this.logger = new Logger('FusionPlusService');
-    this.oneInchAPI = new OneInchAPI();
-    this.supportedChains = new Map();
-    this.initializeSupportedChains();
-  }
-
-  private initializeSupportedChains() {
-    // Import all chain configurations
-    const { PRIORITY_CHAINS, STANDARD_CHAINS, EVM_CHAINS } = require('../types/chains');
+  constructor(config: FusionPlusConfig) {
+    this.config = config;
+    this.apiKey = config.apiKey;
+    this.provider = new ethers.JsonRpcProvider(config.rpcUrl);
+    this.wallet = new ethers.Wallet(config.privateKey, this.provider);
     
-    [...PRIORITY_CHAINS, ...STANDARD_CHAINS, ...EVM_CHAINS].forEach(chain => {
-      if (chain.fusionPlusSupported) {
-        this.supportedChains.set(chain.id, chain);
-      }
+    // Initialize Fusion SDK v2
+    this.fusionSDK = new FusionSDK({
+      url: 'https://fusion.1inch.io',
+      network: config.chainId,
+      authKey: config.apiKey,
     });
 
-    this.logger.info(`Initialized ${this.supportedChains.size} Fusion+ supported chains`);
+    // Initialize NEAR service for cross-chain swaps
+    this.initializeNEARService();
   }
 
   /**
-   * Get quote for cross-chain swap using 1inch Fusion+
+   * Initialize NEAR service for cross-chain swaps
    */
-  async getFusionPlusQuote(
-    fromChain: string,
-    toChain: string,
-    fromToken: string,
-    toToken: string,
-    amount: string,
-    userAddress: string
-  ): Promise<any> {
+  private initializeNEARService(): void {
     try {
-      this.logger.info(`Getting Fusion+ quote: ${fromChain} -> ${toChain}, ${amount} ${fromToken} -> ${toToken}`);
+      const nearConfig = NEAR_CONFIGS.mainnet; // Default to mainnet
+      this.nearService = new NEARService(nearConfig);
+    } catch (error) {
+      console.error('Error initializing NEAR service:', error);
+    }
+  }
 
-      // Validate chains
-      const fromChainConfig = this.supportedChains.get(fromChain);
-      const toChainConfig = this.supportedChains.get(toChain);
+  /**
+   * Get a quote for a token swap using 1inch Fusion+ API
+   */
+  async getQuote(params: {
+    fromToken: string;
+    toToken: string;
+    fromAmount: string;
+    chainId: number;
+  }): Promise<SwapQuote> {
+    try {
+      // Use Fusion SDK v2 for quote
+      const quote = await this.fusionSDK.getQuote({
+        fromTokenAddress: params.fromToken,
+        toTokenAddress: params.toToken,
+        amount: params.fromAmount,
+        walletAddress: this.wallet.address,
+      });
 
-      if (!fromChainConfig || !toChainConfig) {
-        throw new Error(`Unsupported chain: ${fromChain} or ${toChain}`);
+      return {
+        fromToken: params.fromToken,
+        toToken: params.toToken,
+        fromAmount: params.fromAmount,
+        toAmount: quote.toTokenAmount,
+        price: quote.prices?.usd?.toToken || '0',
+        gasEstimate: '0', // Fusion+ doesn't provide gas estimate in quote
+        protocols: [], // Fusion+ doesn't provide protocols in quote
+        tx: undefined, // Fusion+ doesn't provide tx in quote
+      };
+    } catch (error) {
+      console.error('Error getting quote:', error);
+      throw new Error(`Failed to get quote: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+  }
+
+  /**
+   * Execute a swap using 1inch Fusion+ API
+   */
+  async executeSwap(params: {
+    fromToken: string;
+    toToken: string;
+    fromAmount: string;
+    toAmount: string;
+    userAddress: string;
+    deadline?: number;
+  }) {
+    try {
+      // Use Fusion SDK v2 for swap execution
+      const preparedOrder = await this.fusionSDK.createOrder({
+        fromTokenAddress: params.fromToken,
+        toTokenAddress: params.toToken,
+        amount: params.fromAmount,
+        walletAddress: params.userAddress,
+        receiver: params.userAddress,
+      });
+
+      // Sign and submit the order
+      const signature = await this.wallet.signMessage(preparedOrder.hash);
+      
+      const submittedOrder = await this.fusionSDK.submitOrder(preparedOrder.order, preparedOrder.quoteId);
+
+      return {
+        orderHash: submittedOrder.orderHash,
+        status: 'submitted',
+        txHash: undefined, // Fusion+ doesn't provide txHash immediately
+        order: submittedOrder,
+      };
+    } catch (error) {
+      console.error('Error executing swap:', error);
+      throw new Error(`Failed to execute swap: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+  }
+
+  /**
+   * Get cross-chain quote using Fusion+ API
+   * Note: Fusion SDK v2 doesn't have built-in cross-chain support
+   * This would need to be implemented using the 1inch API directly
+   */
+  async getCrossChainQuote(params: CrossChainSwapParams) {
+    try {
+      // For cross-chain quotes, we need to use the 1inch API directly
+      // This is a placeholder implementation
+      throw new Error('Cross-chain quotes not implemented in Fusion SDK v2. Use 1inch API directly.');
+    } catch (error) {
+      console.error('Error getting cross-chain quote:', error);
+      throw new Error(`Failed to get cross-chain quote: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+  }
+
+  /**
+   * Execute cross-chain swap using Fusion+ API
+   * Note: Fusion SDK v2 doesn't have built-in cross-chain support
+   * This would need to be implemented using the 1inch API directly
+   */
+  async executeCrossChainSwap(params: CrossChainSwapParams) {
+    try {
+      // For cross-chain swaps, we need to use the 1inch API directly
+      // This is a placeholder implementation
+      throw new Error('Cross-chain swaps not implemented in Fusion SDK v2. Use 1inch API directly.');
+    } catch (error) {
+      console.error('Error executing cross-chain swap:', error);
+      throw new Error(`Failed to execute cross-chain swap: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+  }
+
+  /**
+   * Get quote for EVM to NEAR cross-chain swap
+   */
+  async getNEARCrossChainQuote(params: NEARCrossChainSwapParams) {
+    try {
+      if (!this.nearService) {
+        throw new Error('NEAR service not initialized');
       }
 
-      // Generate hashlock and timelock for HTLC
-      const hashlock = this.generateHashlock();
-      const timelock = Math.floor(Date.now() / 1000) + 3600; // 1 hour
+      // Get quote from source chain (EVM)
+      const evmQuote = await this.getQuote({
+        fromToken: params.fromToken,
+        toToken: params.toToken,
+        fromAmount: params.fromAmount,
+        chainId: this.getChainIdFromName(params.fromChain)
+      });
 
-      // Get quote from 1inch Fusion+ API
-      const quote = await this.oneInchAPI.getFusionPlusQuote({
-        fromChain,
-        toChain,
-        fromToken,
-        toToken,
-        amount,
-        userAddress,
-        hashlock,
+      // Get quote from NEAR side
+      const nearQuote = await this.nearService.getSwapQuote({
+        fromToken: params.toToken,
+        toToken: params.fromToken,
+        fromAmount: params.toAmount
+      });
+
+      return {
+        fromChain: params.fromChain,
+        toChain: params.toChain,
+        fromToken: params.fromToken,
+        toToken: params.toToken,
+        fromAmount: params.fromAmount,
+        toAmount: params.toAmount,
+        evmQuote,
+        nearQuote,
+        estimatedTime: 300, // 5 minutes
+        gasEstimate: evmQuote.gasEstimate,
+        totalFee: '0.005', // 0.5% total fee
+        route: [
+          {
+            chain: params.fromChain,
+            protocol: '1inch-fusion',
+            fromToken: params.fromToken,
+            toToken: params.toToken,
+            amount: params.fromAmount,
+            fee: '0.003'
+          },
+          {
+            chain: 'near',
+            protocol: 'ref-finance',
+            fromToken: params.toToken,
+            toToken: params.fromToken,
+            amount: params.toAmount,
+            fee: '0.002'
+          }
+        ]
+      };
+    } catch (error) {
+      console.error('Error getting NEAR cross-chain quote:', error);
+      throw new Error(`Failed to get NEAR cross-chain quote: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+  }
+
+  /**
+   * Execute EVM to NEAR cross-chain swap
+   */
+  async executeNEARCrossChainSwap(params: NEARCrossChainSwapParams) {
+    try {
+      if (!this.nearService) {
+        throw new Error('NEAR service not initialized');
+      }
+
+      // Create Fusion+ order on EVM side
+      const evmOrder = await this.executeSwap({
+        fromToken: params.fromToken,
+        toToken: params.toToken,
+        fromAmount: params.fromAmount,
+        toAmount: params.toAmount,
+        userAddress: params.userAddress,
+        deadline: params.deadline
+      });
+
+      // Create NEAR Fusion order
+      const timelock = params.timelock || 3600; // 1 hour default
+      const nearOrder = await this.nearService.createFusionOrder({
+        fromToken: params.toToken,
+        toToken: params.fromToken,
+        fromAmount: params.toAmount,
+        toAmount: params.fromAmount,
+        userAddress: params.nearAccountId,
         timelock
       });
 
-      // Build swap route
-      const route: any[] = [
-        {
-          chain: fromChain,
-          protocol: '1inch-fusion-plus',
-          fromToken,
-          toToken,
-          amount,
-          fee: quote.fee || '0'
-        }
-      ];
-
-      // If cross-chain, add bridge route
-      if (fromChain !== toChain) {
-        route.push({
-          chain: toChain,
-          protocol: '1inch-bridge',
-          fromToken,
-          toToken,
-          amount: quote.expectedAmount,
-          fee: quote.bridgeFee || '0'
-        });
-      }
-
       return {
-        fromChain,
-        toChain,
-        fromToken,
-        toToken,
-        amount,
-        expectedAmount: quote.expectedAmount,
-        route,
-        estimatedGas: quote.estimatedGas,
-        estimatedTime: quote.estimatedTime || 300, // 5 minutes default
+        evmOrder: {
+          orderHash: evmOrder.orderHash,
+          status: evmOrder.status,
+          txHash: evmOrder.txHash
+        },
+        nearOrder: {
+          orderId: nearOrder.orderId,
+          status: nearOrder.status,
+          hashlock: nearOrder.hashlock,
+          secret: nearOrder.secret,
+          expiresAt: nearOrder.expiresAt
+        },
+        crossChainSwapId: `cc_swap_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+        status: 'initiated',
+        estimatedTime: timelock,
+        nextSteps: [
+          '1. Wait for EVM order to be filled',
+          '2. Execute NEAR swap using revealed secret',
+          '3. Complete cross-chain transfer'
+        ]
+      };
+    } catch (error) {
+      console.error('Error executing NEAR cross-chain swap:', error);
+      throw new Error(`Failed to execute NEAR cross-chain swap: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+  }
+
+  /**
+   * Get NEAR cross-chain swap status
+   */
+  async getNEARCrossChainSwapStatus(swapId: string) {
+    try {
+      // This would query the status of a cross-chain swap
+      // For now, returning mock status
+      return {
+        swapId,
         status: 'pending',
-        hashlock,
-        timelock
+        evmStatus: 'filled',
+        nearStatus: 'pending',
+        progress: 50,
+        estimatedCompletion: Date.now() + 1800000, // 30 minutes
+        lastUpdated: Date.now()
       };
-
     } catch (error) {
-      this.logger.error('Error getting Fusion+ quote:', error);
-      throw error;
+      console.error('Error getting NEAR cross-chain swap status:', error);
+      throw new Error(`Failed to get NEAR cross-chain swap status: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   }
 
   /**
-   * Execute cross-chain swap using 1inch Fusion+
+   * Get order status using Fusion+ API
    */
-  async executeFusionPlusSwap(
-    quote: any,
-    userAddress: string,
-    signature?: string
-  ): Promise<{ txHash: string; status: string }> {
+  async getOrderStatus(orderHash: string): Promise<OrderStatus> {
     try {
-      this.logger.info(`Executing Fusion+ swap: ${quote.fromChain} -> ${quote.toChain}`);
-
-      // Execute swap through 1inch Fusion+
-      const result = await this.oneInchAPI.executeFusionPlusSwap({
-        quote,
-        userAddress,
-        signature
-      });
-
+      const status = await this.fusionSDK.getOrderStatus(orderHash);
+      
       return {
-        txHash: result.txHash,
-        status: 'executing'
+        orderHash,
+        status: this.mapOrderStatus(status.status),
+        filledAmount: status.fills.length > 0 ? status.fills[0].filledMakerAmount : undefined,
+        remainingAmount: undefined, // Not provided in OrderStatusResponse
+        timestamp: Date.now(),
       };
-
     } catch (error) {
-      this.logger.error('Error executing Fusion+ swap:', error);
-      throw error;
+      console.error('Error getting order status:', error);
+      throw new Error(`Failed to get order status: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   }
 
   /**
-   * Claim funds from HTLC using secret
+   * Get swap status using Fusion+ API
+   * Note: Fusion SDK v2 doesn't have getSwapStatus method
    */
-  async claimHTLC(
-    chain: string,
-    hashlock: string,
-    secret: string,
-    userAddress: string
-  ): Promise<{ txHash: string; status: string }> {
+  async getSwapStatus(swapHash: string) {
     try {
-      this.logger.info(`Claiming HTLC on ${chain} with hashlock: ${hashlock}`);
-
-      const chainConfig = this.supportedChains.get(chain);
-      if (!chainConfig) {
-        throw new Error(`Unsupported chain: ${chain}`);
-      }
-
-      // Different claiming logic based on chain type
-      if (chainConfig.isEVM) {
-        return await this.claimHTLCEVM(chain, hashlock, secret, userAddress);
-      } else {
-        return await this.claimHTLCNonEVM(chain, hashlock, secret, userAddress);
-      }
-
+      // Fusion SDK v2 doesn't have getSwapStatus method
+      // This would need to be implemented using the 1inch API directly
+      throw new Error('getSwapStatus not available in Fusion SDK v2. Use 1inch API directly.');
     } catch (error) {
-      this.logger.error('Error claiming HTLC:', error);
-      throw error;
+      console.error('Error getting swap status:', error);
+      throw new Error(`Failed to get swap status: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   }
 
   /**
-   * Refund HTLC if timelock expires
+   * Get supported tokens for a chain
+   * Note: Fusion SDK v2 doesn't have getSupportedTokens method
    */
-  async refundHTLC(
-    chain: string,
-    hashlock: string,
-    userAddress: string
-  ): Promise<{ txHash: string; status: string }> {
+  async getSupportedTokens(chainId: number) {
     try {
-      this.logger.info(`Refunding HTLC on ${chain} with hashlock: ${hashlock}`);
-
-      const chainConfig = this.supportedChains.get(chain);
-      if (!chainConfig) {
-        throw new Error(`Unsupported chain: ${chain}`);
-      }
-
-      // Different refund logic based on chain type
-      if (chainConfig.isEVM) {
-        return await this.refundHTLCEVM(chain, hashlock, userAddress);
-      } else {
-        return await this.refundHTLCNonEVM(chain, hashlock, userAddress);
-      }
-
+      // Fusion SDK v2 doesn't have getSupportedTokens method
+      // This would need to be implemented using the 1inch API directly
+      throw new Error('getSupportedTokens not available in Fusion SDK v2. Use 1inch API directly.');
     } catch (error) {
-      this.logger.error('Error refunding HTLC:', error);
-      throw error;
+      console.error('Error getting supported tokens:', error);
+      throw new Error(`Failed to get supported tokens: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   }
 
   /**
-   * Get supported chains for Fusion+
+   * Get active orders for a user
    */
-  getSupportedChains(): any[] {
-    return Array.from(this.supportedChains.values());
-  }
-
-  /**
-   * Check if chain supports Fusion+
-   */
-  isChainSupported(chainId: string): boolean {
-    return this.supportedChains.has(chainId);
-  }
-
-  /**
-   * Get chain-specific HTLC contract address
-   */
-  getHTLCContractAddress(chain: string): string {
-    const chainConfig = this.supportedChains.get(chain);
-    if (!chainConfig) {
-      throw new Error(`Unsupported chain: ${chain}`);
+  async getActiveOrders(userAddress: string) {
+    try {
+      const orders = await this.fusionSDK.getActiveOrders({ page: 1, limit: 100 });
+      return orders;
+    } catch (error) {
+      console.error('Error getting active orders:', error);
+      throw new Error(`Failed to get active orders: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
+  }
 
-    // Return chain-specific HTLC contract addresses
-    const htlcAddresses: Record<string, string> = {
-      'ethereum': process.env.ETH_HTLC_ADDRESS || '',
-      'bitcoin': process.env.BTC_HTLC_ADDRESS || '',
-      'stellar': process.env.STELLAR_HTLC_ADDRESS || '',
-      'near': process.env.NEAR_HTLC_ADDRESS || '',
-      'aptos': process.env.APTOS_HTLC_ADDRESS || '',
-      'sui': process.env.SUI_HTLC_ADDRESS || '',
-      'tron': process.env.TRON_HTLC_ADDRESS || '',
-      'cosmos': process.env.COSMOS_HTLC_ADDRESS || '',
-      'ton': process.env.TON_HTLC_ADDRESS || '',
-      'monad': process.env.MONAD_HTLC_ADDRESS || '',
-      'starknet': process.env.STARKNET_HTLC_ADDRESS || '',
-      'cardano': process.env.CARDANO_HTLC_ADDRESS || '',
-      'xrp': process.env.XRP_HTLC_ADDRESS || '',
-      'icp': process.env.ICP_HTLC_ADDRESS || '',
-      'tezos': process.env.TEZOS_HTLC_ADDRESS || '',
-      'polkadot': process.env.POLKADOT_HTLC_ADDRESS || '',
-      'etherlink': process.env.ETHERLINK_HTLC_ADDRESS || ''
+  /**
+   * Cancel an order
+   * Note: Fusion SDK v2 doesn't have cancelOrder method
+   */
+  async cancelOrder(orderHash: string) {
+    try {
+      // Fusion SDK v2 doesn't have cancelOrder method
+      // This would need to be implemented using the 1inch API directly
+      throw new Error('cancelOrder not available in Fusion SDK v2. Use 1inch API directly.');
+    } catch (error) {
+      console.error('Error cancelling order:', error);
+      throw new Error(`Failed to cancel order: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+  }
+
+  /**
+   * Estimate gas for a swap
+   * Note: Fusion SDK v2 doesn't have estimateGas method
+   */
+  async estimateGas(params: {
+    fromToken: string;
+    toToken: string;
+    fromAmount: string;
+    userAddress: string;
+  }) {
+    try {
+      // Fusion SDK v2 doesn't have estimateGas method
+      // This would need to be implemented using the 1inch API directly
+      throw new Error('estimateGas not available in Fusion SDK v2. Use 1inch API directly.');
+    } catch (error) {
+      console.error('Error estimating gas:', error);
+      throw new Error(`Failed to estimate gas: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+  }
+
+  /**
+   * Get wallet address
+   */
+  getWalletAddress(): string {
+    return this.wallet.address;
+  }
+
+  /**
+   * Get chain ID
+   */
+  getChainId(): number {
+    return this.config.chainId;
+  }
+
+  /**
+   * Get Fusion SDK instance
+   */
+  getFusionSDK(): FusionSDK {
+    return this.fusionSDK;
+  }
+
+  /**
+   * Get chain ID from chain name
+   */
+  private getChainIdFromName(chainName: string): number {
+    const chainMap: Record<string, number> = {
+      'ethereum': 1,
+      'polygon': 137,
+      'arbitrum': 42161,
+      'base': 8453,
+      'sepolia': 11155111,
+      'polygon-mumbai': 80001,
+      'arbitrum-sepolia': 421614,
+      'base-sepolia': 84532
     };
-
-    return htlcAddresses[chain] || '';
-  }
-
-  /**
-   * Generate hashlock for HTLC
-   */
-  private generateHashlock(): string {
-    const crypto = require('crypto');
-    const secret = crypto.randomBytes(32);
-    const hash = crypto.createHash('sha256').update(secret).digest('hex');
-    return hash;
-  }
-
-  /**
-   * Claim HTLC on EVM chains
-   */
-  private async claimHTLCEVM(
-    chain: string,
-    hashlock: string,
-    secret: string,
-    userAddress: string
-  ): Promise<{ txHash: string; status: string }> {
-    // Implementation for EVM chains
-    const { ethers } = require('ethers');
     
-    // Get chain RPC URL
-    const chainConfig = this.supportedChains.get(chain);
-    if (!chainConfig) {
-      throw new Error(`Chain config not found: ${chain}`);
-    }
-
-    const provider = new ethers.JsonRpcProvider(chainConfig.rpcUrl);
-    const wallet = new ethers.Wallet(process.env.PRIVATE_KEY || '', provider);
-
-    // HTLC contract ABI (simplified)
-    const htlcABI = [
-      'function claim(bytes32 hashlock, bytes32 secret) external',
-      'function refund(bytes32 hashlock) external'
-    ];
-
-    const htlcAddress = this.getHTLCContractAddress(chain);
-    const htlcContract = new ethers.Contract(htlcAddress, htlcABI, wallet);
-
-    const tx = await htlcContract.claim(hashlock, secret);
-    const receipt = await tx.wait();
-
-    return {
-      txHash: receipt.hash,
-      status: 'completed'
-    };
+    return chainMap[chainName] || 1; // Default to Ethereum mainnet
   }
 
   /**
-   * Claim HTLC on non-EVM chains
+   * Map Fusion SDK OrderStatus to our OrderStatus
    */
-  private async claimHTLCNonEVM(
-    chain: string,
-    hashlock: string,
-    secret: string,
-    userAddress: string
-  ): Promise<{ txHash: string; status: string }> {
-    // Implementation varies by chain
-    switch (chain) {
-      case 'bitcoin':
-        return await this.claimHTLCBitcoin(hashlock, secret, userAddress);
-      case 'stellar':
-        return await this.claimHTLCStellar(hashlock, secret, userAddress);
-      case 'near':
-        return await this.claimHTLCNear(hashlock, secret, userAddress);
-      case 'aptos':
-        return await this.claimHTLCAptos(hashlock, secret, userAddress);
-      case 'sui':
-        return await this.claimHTLCSui(hashlock, secret, userAddress);
-      case 'tron':
-        return await this.claimHTLCTron(hashlock, secret, userAddress);
-      case 'cosmos':
-        return await this.claimHTLCCosmos(hashlock, secret, userAddress);
-      case 'ton':
-        return await this.claimHTLCTon(hashlock, secret, userAddress);
-      case 'cardano':
-        return await this.claimHTLCCardano(hashlock, secret, userAddress);
-      case 'xrp':
-        return await this.claimHTLCXRP(hashlock, secret, userAddress);
-      case 'icp':
-        return await this.claimHTLCICP(hashlock, secret, userAddress);
-      case 'tezos':
-        return await this.claimHTLCTezos(hashlock, secret, userAddress);
-      case 'polkadot':
-        return await this.claimHTLCPolkadot(hashlock, secret, userAddress);
+  private mapOrderStatus(status: any): 'pending' | 'filled' | 'cancelled' | 'expired' {
+    switch (status) {
+      case 'pending':
+      case 'partially-filled':
+        return 'pending';
+      case 'filled':
+        return 'filled';
+      case 'cancelled':
+        return 'cancelled';
+      case 'expired':
+      case 'false-predicate':
+      case 'not-enough-balance-or-allowance':
+      case 'wrong-permit':
+      case 'invalid-signature':
+        return 'expired';
       default:
-        throw new Error(`HTLC claiming not implemented for chain: ${chain}`);
+        return 'pending';
     }
   }
+}
 
-  /**
-   * Refund HTLC on EVM chains
-   */
-  private async refundHTLCEVM(
-    chain: string,
-    hashlock: string,
-    userAddress: string
-  ): Promise<{ txHash: string; status: string }> {
-    const { ethers } = require('ethers');
-    
-    const chainConfig = this.supportedChains.get(chain);
-    if (!chainConfig) {
-      throw new Error(`Chain config not found: ${chain}`);
-    }
+export function createFusionPlusService(config: FusionPlusConfig): FusionPlusService {
+  return new FusionPlusService(config);
+}
 
-    const provider = new ethers.JsonRpcProvider(chainConfig.rpcUrl);
-    const wallet = new ethers.Wallet(process.env.PRIVATE_KEY || '', provider);
-
-    const htlcABI = [
-      'function refund(bytes32 hashlock) external'
-    ];
-
-    const htlcAddress = this.getHTLCContractAddress(chain);
-    const htlcContract = new ethers.Contract(htlcAddress, htlcABI, wallet);
-
-    const tx = await htlcContract.refund(hashlock);
-    const receipt = await tx.wait();
-
-    return {
-      txHash: receipt.hash,
-      status: 'completed'
-    };
-  }
-
-  /**
-   * Refund HTLC on non-EVM chains
-   */
-  private async refundHTLCNonEVM(
-    chain: string,
-    hashlock: string,
-    userAddress: string
-  ): Promise<{ txHash: string; status: string }> {
-    // Similar to claimHTLCNonEVM but for refunds
-    switch (chain) {
-      case 'bitcoin':
-        return await this.refundHTLCBitcoin(hashlock, userAddress);
-      case 'stellar':
-        return await this.refundHTLCStellar(hashlock, userAddress);
-      // ... implement for other chains
-      default:
-        throw new Error(`HTLC refund not implemented for chain: ${chain}`);
-    }
-  }
-
-  // Chain-specific HTLC implementations
-  private async claimHTLCBitcoin(hashlock: string, secret: string, userAddress: string) {
-    // Bitcoin HTLC claiming using bitcoinjs-lib
-    const bitcoin = require('bitcoinjs-lib');
-    // Implementation details...
-    return { txHash: 'bitcoin-tx-hash', status: 'completed' };
-  }
-
-  private async claimHTLCStellar(hashlock: string, secret: string, userAddress: string) {
-    // Stellar HTLC claiming using stellar-sdk
-    const StellarSdk = require('@stellar/stellar-sdk');
-    // Implementation details...
-    return { txHash: 'stellar-tx-hash', status: 'completed' };
-  }
-
-  private async claimHTLCNear(hashlock: string, secret: string, userAddress: string) {
-    // NEAR HTLC claiming using near-api-js
-    const { connect, keyStores, KeyPair } = require('near-api-js');
-    // Implementation details...
-    return { txHash: 'near-tx-hash', status: 'completed' };
-  }
-
-  private async claimHTLCAptos(hashlock: string, secret: string, userAddress: string) {
-    // Aptos HTLC claiming using @aptos-labs/ts-sdk
-    const { AptosClient, AptosAccount } = require('@aptos-labs/ts-sdk');
-    // Implementation details...
-    return { txHash: 'aptos-tx-hash', status: 'completed' };
-  }
-
-  private async claimHTLCSui(hashlock: string, secret: string, userAddress: string) {
-    // Sui HTLC claiming using @sui/sui.js
-    const { SuiClient } = require('@sui/sui.js');
-    // Implementation details...
-    return { txHash: 'sui-tx-hash', status: 'completed' };
-  }
-
-  private async claimHTLCTron(hashlock: string, secret: string, userAddress: string) {
-    // Tron HTLC claiming using @tronweb/tronweb
-    const TronWeb = require('@tronweb/tronweb');
-    // Implementation details...
-    return { txHash: 'tron-tx-hash', status: 'completed' };
-  }
-
-  private async claimHTLCCosmos(hashlock: string, secret: string, userAddress: string) {
-    // Cosmos HTLC claiming using @cosmjs/stargate
-    const { StargateClient } = require('@cosmjs/stargate');
-    // Implementation details...
-    return { txHash: 'cosmos-tx-hash', status: 'completed' };
-  }
-
-  private async claimHTLCTon(hashlock: string, secret: string, userAddress: string) {
-    // TON HTLC claiming using @ton/ton
-    const { TonClient } = require('@ton/ton');
-    // Implementation details...
-    return { txHash: 'ton-tx-hash', status: 'completed' };
-  }
-
-  private async claimHTLCCardano(hashlock: string, secret: string, userAddress: string) {
-    // Cardano HTLC claiming using @cardano-sdk/core
-    const { Cardano } = require('@cardano-sdk/core');
-    // Implementation details...
-    return { txHash: 'cardano-tx-hash', status: 'completed' };
-  }
-
-  private async claimHTLCXRP(hashlock: string, secret: string, userAddress: string) {
-    // XRP HTLC claiming using xrpl
-    const xrpl = require('xrpl');
-    // Implementation details...
-    return { txHash: 'xrp-tx-hash', status: 'completed' };
-  }
-
-  private async claimHTLCICP(hashlock: string, secret: string, userAddress: string) {
-    // ICP HTLC claiming using @dfinity/agent
-    const { Actor, HttpAgent } = require('@dfinity/agent');
-    // Implementation details...
-    return { txHash: 'icp-tx-hash', status: 'completed' };
-  }
-
-  private async claimHTLCTezos(hashlock: string, secret: string, userAddress: string) {
-    // Tezos HTLC claiming using @taquito/taquito
-    const { TezosToolkit } = require('@taquito/taquito');
-    // Implementation details...
-    return { txHash: 'tezos-tx-hash', status: 'completed' };
-  }
-
-  private async claimHTLCPolkadot(hashlock: string, secret: string, userAddress: string) {
-    // Polkadot HTLC claiming using @polkadot/api
-    const { ApiPromise, WsProvider } = require('@polkadot/api');
-    // Implementation details...
-    return { txHash: 'polkadot-tx-hash', status: 'completed' };
-  }
-
-  // Refund implementations (similar structure)
-  private async refundHTLCBitcoin(hashlock: string, userAddress: string) {
-    return { txHash: 'bitcoin-refund-tx-hash', status: 'completed' };
-  }
-
-  private async refundHTLCStellar(hashlock: string, userAddress: string) {
-    return { txHash: 'stellar-refund-tx-hash', status: 'completed' };
-  }
-} 
+/**
+ * Default Fusion+ configurations for different networks
+ */
+export const FUSION_PLUS_CONFIGS = {
+  mainnet: {
+    apiKey: process.env.INCH_API_KEY || '',
+    chainId: 1,
+    privateKey: process.env.PRIVATE_KEY || '',
+    rpcUrl: process.env.ETHEREUM_RPC_URL || 'https://eth-mainnet.g.alchemy.com/v2/your_key',
+  },
+  sepolia: {
+    apiKey: process.env.INCH_API_KEY || '',
+    chainId: 11155111,
+    privateKey: process.env.PRIVATE_KEY || '',
+    rpcUrl: process.env.SEPOLIA_RPC_URL || 'https://sepolia.drpc.org',
+  },
+  arbitrum: {
+    apiKey: process.env.INCH_API_KEY || '',
+    chainId: 42161,
+    privateKey: process.env.PRIVATE_KEY || '',
+    rpcUrl: process.env.ARBITRUM_RPC_URL || 'https://arb1.arbitrum.io/rpc',
+  },
+  polygon: {
+    apiKey: process.env.INCH_API_KEY || '',
+    chainId: 137,
+    privateKey: process.env.PRIVATE_KEY || '',
+    rpcUrl: process.env.POLYGON_RPC_URL || 'https://polygon-rpc.com',
+  },
+  base: {
+    apiKey: process.env.INCH_API_KEY || '',
+    chainId: 8453,
+    privateKey: process.env.PRIVATE_KEY || '',
+    rpcUrl: process.env.BASE_RPC_URL || 'https://mainnet.base.org',
+  },
+  near: {
+    apiKey: process.env.INCH_API_KEY || '',
+    chainId: 1313161554, // NEAR chain ID for Fusion+
+    privateKey: process.env.PRIVATE_KEY || '',
+    rpcUrl: process.env.NEAR_RPC_URL || 'https://rpc.mainnet.near.org',
+  },
+}; 

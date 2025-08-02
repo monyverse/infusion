@@ -2,9 +2,11 @@
 
 import { useState } from 'react';
 import { Wallet, Brain, Zap, Shield, ArrowRight, Sparkles } from 'lucide-react';
-import { MultiChainSwap } from '../components/chains/multi-chain-swap';
-import { AIAutomationDashboard } from '../components/ai/ai-automation-dashboard';
-import { AchievementCard, Achievement } from '../components/gamification/achievement-card';
+import { MultiChainSwap } from '@/components/chains/multi-chain-swap';
+import { NEARCrossChainSwap } from '@/components/chains/near-cross-chain-swap';
+import { AIAutomationDashboard } from '@/components/ai/ai-automation-dashboard';
+import { AchievementCard, Achievement } from '@/components/gamification/achievement-card';
+import { ApiTest } from '@/components/ui/api-test';
 
 export default function Home() {
   const [intent, setIntent] = useState('');
@@ -49,7 +51,7 @@ export default function Home() {
 
     setIsProcessing(true);
     try {
-      const response = await fetch('http://localhost:3001/api/ai/process-intent', {
+      const response = await fetch('http://localhost:3003/api/ai/process-intent', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -128,6 +130,26 @@ export default function Home() {
             >
               💬 AI Intent
             </button>
+            <button
+              onClick={() => setActiveTab('near')}
+              className={`py-4 px-1 border-b-2 font-medium text-sm ${
+                activeTab === 'near'
+                  ? 'border-blue-400 text-blue-400'
+                  : 'border-transparent text-gray-300 hover:text-white hover:border-gray-300'
+              }`}
+            >
+              🌐 NEAR Cross-Chain
+            </button>
+            <button
+              onClick={() => setActiveTab('api')}
+              className={`py-4 px-1 border-b-2 font-medium text-sm ${
+                activeTab === 'api'
+                  ? 'border-blue-400 text-blue-400'
+                  : 'border-transparent text-gray-300 hover:text-white hover:border-gray-300'
+              }`}
+            >
+              🔧 API Test
+            </button>
           </nav>
         </div>
       </div>
@@ -158,12 +180,21 @@ export default function Home() {
                 Swap tokens across 17+ blockchain networks with 1inch Fusion+ technology
               </p>
             </div>
-            <MultiChainSwap 
-              onSwap={(quote) => {
-                console.log('Swap executed:', quote);
-                // Handle swap execution
-              }}
-            />
+            <MultiChainSwap />
+          </div>
+        )}
+        
+        {activeTab === 'near' && (
+          <div className="space-y-6">
+            <div className="text-center mb-8">
+              <h2 className="text-3xl font-bold mb-4 bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
+                NEAR Cross-Chain Swap
+              </h2>
+              <p className="text-lg text-gray-300">
+                Swap tokens between EVM chains and NEAR using Fusion+ and Chain Signatures
+              </p>
+            </div>
+            <NEARCrossChainSwap />
           </div>
         )}
         
@@ -307,6 +338,20 @@ export default function Home() {
             </div>
           </div>
         )}
+        
+        {activeTab === 'api' && (
+          <div className="space-y-6">
+            <div className="text-center mb-8">
+              <h2 className="text-3xl font-bold mb-4 bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
+                API Testing Interface
+              </h2>
+              <p className="text-lg text-gray-300">
+                Test the backend API endpoints and 1inch proxy functionality
+              </p>
+            </div>
+            <ApiTest />
+          </div>
+        )}
       </main>
 
       {/* Achievements Modal */}
@@ -338,7 +383,7 @@ export default function Home() {
       {/* Footer */}
       <footer className="container mx-auto px-6 py-8 mt-16 border-t border-white/20">
         <div className="text-center text-gray-400">
-          <p>© 2024 UniteAI Wallet. Built for the 1inch Unite DeFi Hackathon.</p>
+          <p>© 2025 UniteAI Wallet. Built by Unite AI Team.</p>
           <p className="mt-2 text-sm">
             AI-Powered Cross-Chain Wallet Automation with 1inch Fusion+ Integration
           </p>
