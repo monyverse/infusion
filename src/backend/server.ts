@@ -1,14 +1,14 @@
-import express from 'express';
-import cors from 'cors';
-import helmet from 'helmet';
-import rateLimit from 'express-rate-limit';
-import { json } from 'body-parser';
-import { createFusionPlusService, FUSION_PLUS_CONFIGS } from '../services/fusion-plus';
-import { createNEARService, NEAR_CONFIGS } from '../services/near-service';
-import { AgentManager } from '../ai/agent-manager';
-import { OrderManager } from '../orders/order-manager';
-import { ReverseOrderManager } from '../reverse/reverse-order-manager';
-import { Logger } from '../utils/logger';
+const express = require('express');
+const cors = require('cors');
+const helmet = require('helmet');
+const rateLimit = require('express-rate-limit');
+const { json } = require('body-parser');
+const { createFusionPlusService, FUSION_PLUS_CONFIGS } = require('../services/fusion-plus');
+const { createNEARService, NEAR_CONFIGS } = require('../services/near-service');
+const { AgentManager } = require('../ai/agent-manager');
+const { OrderManager } = require('../orders/order-manager');
+const { ReverseOrderManager } = require('../reverse/reverse-order-manager');
+const { Logger } = require('../utils/logger');
 
 const app = express();
 const PORT = process.env.PORT || 3003;
@@ -40,7 +40,7 @@ const orderManager = new OrderManager();
 const reverseOrderManager = new ReverseOrderManager();
 
 // Health check endpoint
-app.get('/api/health', (req, res) => {
+app.get('/api/health', (req: any, res: any) => {
   res.json({
     status: 'healthy',
     timestamp: new Date().toISOString(),
@@ -54,7 +54,7 @@ app.get('/api/health', (req, res) => {
 });
 
 // AI Intent Processing
-app.post('/api/ai/process-intent', async (req, res) => {
+app.post('/api/ai/process-intent', async (req: any, res: any) => {
   try {
     const { intent, context } = req.body;
     
@@ -81,7 +81,7 @@ app.post('/api/ai/process-intent', async (req, res) => {
 });
 
 // AI Agent Status
-app.get('/api/ai/status', (req, res) => {
+app.get('/api/ai/status', (req: any, res: any) => {
   try {
     const status = agentManager.getAgentStatus();
     res.json({
@@ -99,7 +99,7 @@ app.get('/api/ai/status', (req, res) => {
 });
 
 // Fusion+ Quote
-app.post('/api/fusion-plus/quote', async (req, res) => {
+app.post('/api/fusion-plus/quote', async (req: any, res: any) => {
   try {
     const { fromToken, toToken, fromAmount, chainId } = req.body;
     
@@ -129,7 +129,7 @@ app.post('/api/fusion-plus/quote', async (req, res) => {
 });
 
 // Fusion+ Swap
-app.post('/api/fusion-plus/swap', async (req, res) => {
+app.post('/api/fusion-plus/swap', async (req: any, res: any) => {
   try {
     const { fromToken, toToken, fromAmount, toAmount, userAddress, deadline } = req.body;
     
@@ -161,7 +161,7 @@ app.post('/api/fusion-plus/swap', async (req, res) => {
 });
 
 // NEAR Cross-Chain Quote
-app.post('/api/near/cross-chain-quote', async (req, res) => {
+app.post('/api/near/cross-chain-quote', async (req: any, res: any) => {
   try {
     const { fromChain, fromToken, toToken, fromAmount, toAmount, userAddress, nearAccountId } = req.body;
     
@@ -195,7 +195,7 @@ app.post('/api/near/cross-chain-quote', async (req, res) => {
 });
 
 // NEAR Cross-Chain Swap
-app.post('/api/near/cross-chain-swap', async (req, res) => {
+app.post('/api/near/cross-chain-swap', async (req: any, res: any) => {
   try {
     const { fromChain, fromToken, toToken, fromAmount, toAmount, userAddress, nearAccountId, deadline, timelock } = req.body;
     
@@ -231,7 +231,7 @@ app.post('/api/near/cross-chain-swap', async (req, res) => {
 });
 
 // NEAR Account Balance
-app.get('/api/near/balance/:accountId', async (req, res) => {
+app.get('/api/near/balance/:accountId', async (req: any, res: any) => {
   try {
     const { accountId } = req.params;
     
@@ -256,7 +256,7 @@ app.get('/api/near/balance/:accountId', async (req, res) => {
 });
 
 // NEAR Token Balance
-app.get('/api/near/token-balance/:accountId/:tokenContractId', async (req, res) => {
+app.get('/api/near/token-balance/:accountId/:tokenContractId', async (req: any, res: any) => {
   try {
     const { accountId, tokenContractId } = req.params;
     
@@ -281,7 +281,7 @@ app.get('/api/near/token-balance/:accountId/:tokenContractId', async (req, res) 
 });
 
 // Order Management
-app.post('/api/orders/create', async (req, res) => {
+app.post('/api/orders/create', async (req: any, res: any) => {
   try {
     const { type, maker, taker, timelock } = req.body;
     
@@ -305,7 +305,7 @@ app.post('/api/orders/create', async (req, res) => {
   }
 });
 
-app.get('/api/orders/:orderId', async (req, res) => {
+app.get('/api/orders/:orderId', async (req: any, res: any) => {
   try {
     const { orderId } = req.params;
     
@@ -333,7 +333,7 @@ app.get('/api/orders/:orderId', async (req, res) => {
   }
 });
 
-app.get('/api/orders', async (req, res) => {
+app.get('/api/orders', async (req: any, res: any) => {
   try {
     const { status, type } = req.query;
     
@@ -358,7 +358,7 @@ app.get('/api/orders', async (req, res) => {
 });
 
 // Portfolio Management
-app.get('/api/portfolio/:address', async (req, res) => {
+app.get('/api/portfolio/:address', async (req: any, res: any) => {
   try {
     const { address } = req.params;
     
@@ -393,7 +393,7 @@ app.get('/api/portfolio/:address', async (req, res) => {
 });
 
 // Error handling middleware
-app.use((error: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
+app.use((error: any, req: any, res: any, next: any) => {
   logger.error('Unhandled error', error);
   res.status(500).json({
     error: 'Internal server error',
@@ -402,7 +402,7 @@ app.use((error: any, req: express.Request, res: express.Response, next: express.
 });
 
 // 404 handler
-app.use('*', (req, res) => {
+app.use('*', (req: any, res: any) => {
   res.status(404).json({
     error: 'Endpoint not found',
     message: `The endpoint ${req.originalUrl} does not exist`,
@@ -415,4 +415,4 @@ app.listen(PORT, () => {
   logger.info(`Health check: http://localhost:${PORT}/api/health`);
 });
 
-export default app; 
+module.exports = app; 
