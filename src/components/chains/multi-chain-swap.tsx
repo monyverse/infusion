@@ -323,8 +323,8 @@ export const MultiChainSwap: React.FC = () => {
       if (isCrossChain) {
         if (fromChain.type === 'evm' && toChain.type === 'evm') {
           await fusionPlus.executeCrossChainSwap({
-            fromChainId: fromChain.chainId!,
-            toChainId: toChain.chainId!,
+            fromChainId: fromChain.chainId ?? 1,
+            toChainId: toChain.chainId ?? 1,
             fromToken: fromToken.address,
             toToken: toToken.address,
             fromAmount: fromAmount,
@@ -401,8 +401,8 @@ export const MultiChainSwap: React.FC = () => {
   };
 
   const getChainTokens = (chain: Chain): Token[] => {
-    const chainKey = chain.type === 'evm' ? chain.chainId?.toString() : chain.id;
-    return COMMON_TOKENS[chainKey || ''] || [];
+    const chainKey = chain.type === 'evm' ? (chain.chainId?.toString() ?? '') : chain.id;
+    return COMMON_TOKENS[chainKey] || [];
   };
 
   return (
@@ -476,7 +476,7 @@ export const MultiChainSwap: React.FC = () => {
                 value={fromToken.address}
                 onChange={(e) => {
                   const tokens = getChainTokens(fromChain);
-                  const token = tokens.find(t => t.address === e.target.value);
+                  const token = tokens.find((t: Token) => t.address === e.target.value);
                   if (token) setFromToken(token);
                 }}
                 className="w-full p-3 bg-white/5 border border-white/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -539,7 +539,7 @@ export const MultiChainSwap: React.FC = () => {
                 value={toToken.address}
                 onChange={(e) => {
                   const tokens = getChainTokens(toChain);
-                  const token = tokens.find(t => t.address === e.target.value);
+                  const token = tokens.find((t: Token) => t.address === e.target.value);
                   if (token) setToToken(token);
                 }}
                 className="w-full p-3 bg-white/5 border border-white/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
