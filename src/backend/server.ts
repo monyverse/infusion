@@ -1,14 +1,14 @@
-const express = require('express');
-const cors = require('cors');
-const helmet = require('helmet');
-const rateLimit = require('express-rate-limit');
-const { json } = require('body-parser');
-const { createFusionPlusService, FUSION_PLUS_CONFIGS } = require('../services/fusion-plus');
-const { createNEARService, NEAR_CONFIGS } = require('../services/near-service');
-const { AgentManager } = require('../ai/agent-manager');
-const { OrderManager } = require('../orders/order-manager');
-const { ReverseOrderManager } = require('../reverse/reverse-order-manager');
-const { Logger } = require('../utils/logger');
+import express from 'express';
+import cors from 'cors';
+import helmet from 'helmet';
+import rateLimit from 'express-rate-limit';
+import { json } from 'body-parser';
+import { createFusionPlusService, FUSION_PLUS_CONFIGS } from '../services/fusion-plus';
+import { createNEARService, NEAR_CONFIGS } from '../services/near-service';
+import { AgentManager } from '../ai/agent-manager';
+import { OrderManager } from '../orders/order-manager';
+import { ReverseOrderManager } from '../reverse/reverse-order-manager';
+import { Logger } from '../utils/logger';
 
 const app = express();
 const PORT = process.env.PORT || 3003;
@@ -415,4 +415,4 @@ app.listen(PORT, () => {
   logger.info(`Health check: http://localhost:${PORT}/api/health`);
 });
 
-module.exports = app; 
+export default app; 

@@ -1,0 +1,147 @@
+# 🖁 EVM ↔ L1 Atomic Swap Scaffolding Guide
+
+This scaffold covers high-level architecture and implementation paths to build atomic swaps (e.g., HTLC-style or equivalents) from EVM-compatible chains to 15 different L1 chains.
+
+---
+
+## ✅ Common Requirements
+- **Secret preimage (hashlock)**: Shared across both chains
+- **Timelock logic**: Enforces refundability if not redeemed in time
+- **Swap lifecycle**:
+  1. Lock (sender)
+  2. Reveal/redeem (receiver)
+  3. Refund (after timeout)
+
+## 🔧 CLI & Offchain
+Use `hashlocked-cli` or build your own command-line tool with:
+- Secret generation
+- Swap monitoring
+- Transaction submission
+- Refund support
+
+### 🧪 CLI: Core Commands (Minimal Spec)
+```bash
+hashlocked-cli \
+  --from evm \
+  --to sui \
+  --amount 10 \
+  --hash abc123... \
+  --refund-time 7200
+```
+
+### Suggested CLI File (TypeScript - Ethers + Aptos + Sui SDK)
+```ts
+import { ethers } from 'ethers';
+import { AptosClient } from 'aptos';
+import { SuiClient } from '@mysten/sui.js';
+
+export async function lockSwap({ fromChain, toChain, hash, amount, expiry }) {
+  if (fromChain === 'evm') {
+    // use ethers to send lock tx to EVM
+  } else if (fromChain === 'aptos') {
+    // use AptosClient to lock
+  } else if (fromChain === 'sui') {
+    // use SuiClient to lock
+  }
+}
+```
+
+(... existing content retained ...)
+
+---
+
+## 🌐 Additional Chains Scaffold (WIP)
+
+(... previous chains ...)
+
+### 10. **Stellar (Soroban)**
+- Smart contracts via [Soroban](https://soroban.stellar.org/)
+- Contracts in Rust compiled to WASM
+- Use hashlock and deadline in contract logic
+
+```rust
+fn lock(env: Env, hashlock: BytesN<32>, deadline: u64) {
+    // store lock info
+}
+
+fn redeem(env: Env, preimage: Bytes) {
+    // check hash match and deadline
+}
+```
+
+### 11. **XRP Ledger (Hooks + Escrow)**
+- Use [XRPL Escrow](https://xrpl.org/escrow.html)
+- Future smart contract via XRPL Hooks (C-style WASM)
+- CLI triggers escrow create/redeem
+
+```json
+{
+  "TransactionType": "EscrowCreate",
+  "Amount": "1000000",
+  "Destination": "rX...",
+  "Condition": "A0628020...",
+  "CancelAfter": 630720000
+}
+```
+
+### 12. **ICP (Internet Computer)**
+- Canisters in [Motoko](https://internetcomputer.org/docs/current/motoko/main/) or Rust
+- Use stable memory to store swaps
+
+```motoko
+public shared(msg) func lock(hash: Text, deadline: Int): async () {
+  // store in stable var
+}
+
+public shared(msg) func redeem(preimage: Text): async () {
+  // validate and release
+}
+```
+
+### 13. **Tezos (SmartPy / Ligo)**
+- Use [SmartPy](https://smartpy.io/) or [Ligo](https://ligolang.org/)
+- FA2 tokens can support locked transfers
+
+```python
+@sp.entry_point
+def lock(params):
+    sp.verify(sp.now < params.timelock)
+    sp.verify(sp.sha256(params.preimage) == self.data.hashlock)
+```
+
+### 14. **Polkadot (Ink! / Substrate)**
+- Contracts in Rust via [ink!](https://use.ink/) or custom pallets
+
+```rust
+#[ink(message)]
+fn lock(&mut self, hashlock: Hash, timelock: u64) {
+    // save lock info
+}
+
+#[ink(message)]
+fn redeem(&mut self, preimage: Vec<u8>) {
+    // validate and unlock
+}
+```
+
+### 15. **EOS (C++ Smart Contracts)**
+- Uses [EOSIO](https://developers.eos.io/manuals/eosio.cdt/latest/index) and C++
+
+```cpp
+[[eosio::action]]
+void lock(name sender, checksum256 hashlock, time_point_sec timelock) {
+  // store state
+}
+```
+
+### 16. **Monad (EVM-Compatible)**
+- Fully EVM-compatible; reuse standard Solidity HTLCs
+
+```solidity
+// Same contract as EVM version
+function lock(bytes32 _hashlock, uint _timelock) external payable { ... }
+```
+
+---
+
+✅ All 15+ chains scaffolded. Next: unify CLI wrappers and cross-chain state sync interface.
