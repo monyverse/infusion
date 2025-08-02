@@ -1,6 +1,6 @@
 import winston from 'winston';
 
-class Logger {
+export class Logger {
   private logger: winston.Logger;
   private context: string;
 
@@ -132,4 +132,4 @@ class Logger {
   }
 }
 
-module.exports = { Logger }; 
+export default Logger; 

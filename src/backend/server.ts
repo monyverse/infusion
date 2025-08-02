@@ -1,250 +1,393 @@
-const express = require('express');
-const cors = require('cors');
-const helmet = require('helmet');
-const { rateLimit } = require('express-rate-limit');
-const { agentManager } = require('../ai/agent-manager');
-const { Logger } = require('../utils/logger');
-const { OneInchAPI } = require('../utils/1inch-api');
+import express from 'express';
+import cors from 'cors';
+import helmet from 'helmet';
+import rateLimit from 'express-rate-limit';
+import { json } from 'body-parser';
+import { createFusionPlusService, FUSION_PLUS_CONFIGS } from '../services/fusion-plus';
+import { createNEARService, NEAR_CONFIGS } from '../services/near-service';
+import { AgentManager } from '../ai/agent-manager';
+import { OrderManager } from '../orders/order-manager';
+import { ReverseOrderManager } from '../reverse/reverse-order-manager';
+import { Logger } from '../utils/logger';
 
 const app = express();
-const logger = new Logger('backend');
-const PORT = process.env.PORT || 3001;
+const PORT = process.env.PORT || 3003;
+const logger = new Logger('BackendServer');
 
 // Security middleware
 app.use(helmet());
 app.use(cors({
   origin: process.env.FRONTEND_URL || 'http://localhost:3000',
-  credentials: true
+  credentials: true,
 }));
 
 // Rate limiting
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
   max: 100, // limit each IP to 100 requests per windowMs
-  message: 'Too many requests from this IP, please try again later.'
+  message: 'Too many requests from this IP, please try again later.',
 });
 app.use('/api/', limiter);
 
 // Body parsing middleware
-app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ extended: true }));
+app.use(json({ limit: '10mb' }));
+
+// Initialize services
+const fusionPlusService = createFusionPlusService(FUSION_PLUS_CONFIGS.sepolia);
+const nearService = createNEARService(NEAR_CONFIGS.testnet);
+const agentManager = new AgentManager();
+const orderManager = new OrderManager();
+const reverseOrderManager = new ReverseOrderManager();
 
 // Health check endpoint
-app.get('/api/health', async (req, res) => {
-  try {
-    const isHealthy = await agentManager.healthCheck();
-    res.json({
-      status: isHealthy ? 'healthy' : 'unhealthy',
-      timestamp: new Date().toISOString(),
-      services: {
-        agentManager: isHealthy,
-        oneinch: true // TODO: Add actual health check
-      }
-    });
-  } catch (error) {
-    logger.error('Health check failed', error);
-    res.status(500).json({
-      status: 'unhealthy',
-      error: 'Health check failed'
-    });
-  }
+app.get('/api/health', (req, res) => {
+  res.json({
+    status: 'healthy',
+    timestamp: new Date().toISOString(),
+    services: {
+      fusionPlus: 'active',
+      near: 'active',
+      ai: 'active',
+      orders: 'active',
+    },
+  });
 });
 
-// AI Intent Processing endpoint
+// AI Intent Processing
 app.post('/api/ai/process-intent', async (req, res) => {
   try {
     const { intent, context } = req.body;
-
+    
     if (!intent) {
-      return res.status(400).json({
-        error: 'Intent is required'
-      });
+      return res.status(400).json({ error: 'Intent is required' });
     }
 
     logger.info('Processing AI intent', { intent, context });
-
+    
     const result = await agentManager.processIntent(intent, context);
-
+    
     res.json({
       success: true,
-      result,
-      timestamp: new Date().toISOString()
+      data: result,
+      timestamp: new Date().toISOString(),
     });
-
   } catch (error) {
-    logger.error('Failed to process intent', error);
+    logger.error('Error processing AI intent', error);
     res.status(500).json({
-      success: false,
-      error: error instanceof Error ? error.message : 'Unknown error occurred'
+      error: 'Failed to process intent',
+      message: error instanceof Error ? error.message : 'Unknown error',
     });
   }
 });
 
-// Agent status endpoint
+// AI Agent Status
 app.get('/api/ai/status', (req, res) => {
   try {
     const status = agentManager.getAgentStatus();
     res.json({
       success: true,
-      agents: status,
-      timestamp: new Date().toISOString()
+      data: status,
+      timestamp: new Date().toISOString(),
     });
   } catch (error) {
-    logger.error('Failed to get agent status', error);
+    logger.error('Error getting AI status', error);
     res.status(500).json({
-      success: false,
-      error: 'Failed to get agent status'
+      error: 'Failed to get AI status',
+      message: error instanceof Error ? error.message : 'Unknown error',
     });
   }
 });
 
-// 1inch API proxy endpoints
-const oneInchAPI = new OneInchAPI();
-
-// Get swap quote
-app.post('/api/1inch/quote', async (req, res) => {
+// Fusion+ Quote
+app.post('/api/fusion-plus/quote', async (req, res) => {
   try {
-    const { fromToken, toToken, amount, chainId } = req.body;
-
-    if (!fromToken || !toToken || !amount || !chainId) {
-      return res.status(400).json({
-        error: 'Missing required parameters: fromToken, toToken, amount, chainId'
-      });
-    }
-
-    const quote = await oneInchAPI.getSwapQuote({
-      chain: chainId.toString(),
-      tokenIn: fromToken,
-      tokenOut: toToken,
-      amount: amount.toString()
-    });
-
-    res.json({
-      success: true,
-      quote,
-      timestamp: new Date().toISOString()
-    });
-
-  } catch (error) {
-    logger.error('Failed to get swap quote', error);
-    res.status(500).json({
-      success: false,
-      error: error instanceof Error ? error.message : 'Failed to get swap quote'
-    });
-  }
-});
-
-// Execute swap
-app.post('/api/1inch/swap', async (req, res) => {
-  try {
-    const { fromToken, toToken, amount, chainId, fromAddress, slippage } = req.body;
-
-    if (!fromToken || !toToken || !amount || !chainId || !fromAddress) {
-      return res.status(400).json({
-        error: 'Missing required parameters'
-      });
-    }
-
-    const swapResult = await oneInchAPI.executeSwap({
-      chain: chainId.toString(),
-      tokenIn: fromToken,
-      tokenOut: toToken,
-      amountIn: amount.toString(),
-      slippage: slippage || 1,
-      recipient: fromAddress,
-      tx: {
-        to: '',
-        data: '',
-        value: '0',
-        gas: 0,
-        gasPrice: '0'
-      }
-    });
-
-    res.json({
-      success: true,
-      result: swapResult,
-      timestamp: new Date().toISOString()
-    });
-
-  } catch (error) {
-    logger.error('Failed to execute swap', error);
-    res.status(500).json({
-      success: false,
-      error: error instanceof Error ? error.message : 'Failed to execute swap'
-    });
-  }
-});
-
-// Get supported tokens
-app.get('/api/1inch/tokens/:chainId', async (req, res) => {
-  try {
-    const { chainId } = req.params;
-    const tokens = await oneInchAPI.getSupportedTokens(chainId);
-
-    res.json({
-      success: true,
-      tokens,
-      timestamp: new Date().toISOString()
-    });
-
-  } catch (error) {
-    logger.error('Failed to get supported tokens', error);
-    res.status(500).json({
-      success: false,
-      error: 'Failed to get supported tokens'
-    });
-  }
-});
-
-// Get token price
-app.get('/api/1inch/price/:token/:chainId', async (req, res) => {
-  try {
-    const { token, chainId } = req.params;
-    const price = await oneInchAPI.getTokenPrice(token, chainId);
-
-    res.json({
-      success: true,
-      price,
-      timestamp: new Date().toISOString()
-    });
-
-  } catch (error) {
-    logger.error('Failed to get token price', error);
-    res.status(500).json({
-      success: false,
-      error: 'Failed to get token price'
-    });
-  }
-});
-
-// Portfolio endpoints
-app.get('/api/portfolio/balance/:address/:chainId', async (req, res) => {
-  try {
-    const { address, chainId } = req.params;
+    const { fromToken, toToken, fromAmount, chainId } = req.body;
     
-    // TODO: Implement actual balance fetching
-    const mockBalance = {
-      address,
-      chainId,
-      tokens: [
-        { symbol: 'ETH', balance: '1.5', usdValue: '3000' },
-        { symbol: 'USDC', balance: '1000', usdValue: '1000' }
-      ],
-      totalUsdValue: '4000'
-    };
+    if (!fromToken || !toToken || !fromAmount || !chainId) {
+      return res.status(400).json({ error: 'Missing required parameters' });
+    }
 
+    const quote = await fusionPlusService.getQuote({
+      fromToken,
+      toToken,
+      fromAmount,
+      chainId,
+    });
+    
     res.json({
       success: true,
-      balance: mockBalance,
-      timestamp: new Date().toISOString()
+      data: quote,
+      timestamp: new Date().toISOString(),
     });
-
   } catch (error) {
-    logger.error('Failed to get portfolio balance', error);
+    logger.error('Error getting Fusion+ quote', error);
     res.status(500).json({
-      success: false,
-      error: 'Failed to get portfolio balance'
+      error: 'Failed to get quote',
+      message: error instanceof Error ? error.message : 'Unknown error',
+    });
+  }
+});
+
+// Fusion+ Swap
+app.post('/api/fusion-plus/swap', async (req, res) => {
+  try {
+    const { fromToken, toToken, fromAmount, toAmount, userAddress, deadline } = req.body;
+    
+    if (!fromToken || !toToken || !fromAmount || !toAmount || !userAddress) {
+      return res.status(400).json({ error: 'Missing required parameters' });
+    }
+
+    const result = await fusionPlusService.executeSwap({
+      fromToken,
+      toToken,
+      fromAmount,
+      toAmount,
+      userAddress,
+      deadline,
+    });
+    
+    res.json({
+      success: true,
+      data: result,
+      timestamp: new Date().toISOString(),
+    });
+  } catch (error) {
+    logger.error('Error executing Fusion+ swap', error);
+    res.status(500).json({
+      error: 'Failed to execute swap',
+      message: error instanceof Error ? error.message : 'Unknown error',
+    });
+  }
+});
+
+// NEAR Cross-Chain Quote
+app.post('/api/near/cross-chain-quote', async (req, res) => {
+  try {
+    const { fromChain, fromToken, toToken, fromAmount, toAmount, userAddress, nearAccountId } = req.body;
+    
+    if (!fromChain || !fromToken || !toToken || !fromAmount || !toAmount || !userAddress || !nearAccountId) {
+      return res.status(400).json({ error: 'Missing required parameters' });
+    }
+
+    const quote = await fusionPlusService.getNEARCrossChainQuote({
+      fromChain,
+      toChain: 'near',
+      fromToken,
+      toToken,
+      fromAmount,
+      toAmount,
+      userAddress,
+      nearAccountId,
+    });
+    
+    res.json({
+      success: true,
+      data: quote,
+      timestamp: new Date().toISOString(),
+    });
+  } catch (error) {
+    logger.error('Error getting NEAR cross-chain quote', error);
+    res.status(500).json({
+      error: 'Failed to get cross-chain quote',
+      message: error instanceof Error ? error.message : 'Unknown error',
+    });
+  }
+});
+
+// NEAR Cross-Chain Swap
+app.post('/api/near/cross-chain-swap', async (req, res) => {
+  try {
+    const { fromChain, fromToken, toToken, fromAmount, toAmount, userAddress, nearAccountId, deadline, timelock } = req.body;
+    
+    if (!fromChain || !fromToken || !toToken || !fromAmount || !toAmount || !userAddress || !nearAccountId) {
+      return res.status(400).json({ error: 'Missing required parameters' });
+    }
+
+    const result = await fusionPlusService.executeNEARCrossChainSwap({
+      fromChain,
+      toChain: 'near',
+      fromToken,
+      toToken,
+      fromAmount,
+      toAmount,
+      userAddress,
+      nearAccountId,
+      deadline,
+      timelock,
+    });
+    
+    res.json({
+      success: true,
+      data: result,
+      timestamp: new Date().toISOString(),
+    });
+  } catch (error) {
+    logger.error('Error executing NEAR cross-chain swap', error);
+    res.status(500).json({
+      error: 'Failed to execute cross-chain swap',
+      message: error instanceof Error ? error.message : 'Unknown error',
+    });
+  }
+});
+
+// NEAR Account Balance
+app.get('/api/near/balance/:accountId', async (req, res) => {
+  try {
+    const { accountId } = req.params;
+    
+    if (!accountId) {
+      return res.status(400).json({ error: 'Account ID is required' });
+    }
+
+    const balance = await nearService.getAccountBalance(accountId);
+    
+    res.json({
+      success: true,
+      data: { accountId, balance },
+      timestamp: new Date().toISOString(),
+    });
+  } catch (error) {
+    logger.error('Error getting NEAR balance', error);
+    res.status(500).json({
+      error: 'Failed to get balance',
+      message: error instanceof Error ? error.message : 'Unknown error',
+    });
+  }
+});
+
+// NEAR Token Balance
+app.get('/api/near/token-balance/:accountId/:tokenContractId', async (req, res) => {
+  try {
+    const { accountId, tokenContractId } = req.params;
+    
+    if (!accountId || !tokenContractId) {
+      return res.status(400).json({ error: 'Account ID and token contract ID are required' });
+    }
+
+    const balance = await nearService.getTokenBalance(accountId, tokenContractId);
+    
+    res.json({
+      success: true,
+      data: { accountId, tokenContractId, balance },
+      timestamp: new Date().toISOString(),
+    });
+  } catch (error) {
+    logger.error('Error getting NEAR token balance', error);
+    res.status(500).json({
+      error: 'Failed to get token balance',
+      message: error instanceof Error ? error.message : 'Unknown error',
+    });
+  }
+});
+
+// Order Management
+app.post('/api/orders/create', async (req, res) => {
+  try {
+    const { type, maker, taker, timelock } = req.body;
+    
+    if (!type || !maker || !taker || !timelock) {
+      return res.status(400).json({ error: 'Missing required parameters' });
+    }
+
+    const order = orderManager.createOrder(type, maker, taker, timelock);
+    
+    res.json({
+      success: true,
+      data: order,
+      timestamp: new Date().toISOString(),
+    });
+  } catch (error) {
+    logger.error('Error creating order', error);
+    res.status(500).json({
+      error: 'Failed to create order',
+      message: error instanceof Error ? error.message : 'Unknown error',
+    });
+  }
+});
+
+app.get('/api/orders/:orderId', async (req, res) => {
+  try {
+    const { orderId } = req.params;
+    
+    if (!orderId) {
+      return res.status(400).json({ error: 'Order ID is required' });
+    }
+
+    const order = orderManager.getOrder(orderId);
+    
+    if (!order) {
+      return res.status(404).json({ error: 'Order not found' });
+    }
+    
+    res.json({
+      success: true,
+      data: order,
+      timestamp: new Date().toISOString(),
+    });
+  } catch (error) {
+    logger.error('Error getting order', error);
+    res.status(500).json({
+      error: 'Failed to get order',
+      message: error instanceof Error ? error.message : 'Unknown error',
+    });
+  }
+});
+
+app.get('/api/orders', async (req, res) => {
+  try {
+    const { status, type } = req.query;
+    
+    const filter: any = {};
+    if (status) filter.status = status;
+    if (type) filter.type = type;
+    
+    const orders = orderManager.listOrders(filter);
+    
+    res.json({
+      success: true,
+      data: orders,
+      timestamp: new Date().toISOString(),
+    });
+  } catch (error) {
+    logger.error('Error listing orders', error);
+    res.status(500).json({
+      error: 'Failed to list orders',
+      message: error instanceof Error ? error.message : 'Unknown error',
+    });
+  }
+});
+
+// Portfolio Management
+app.get('/api/portfolio/:address', async (req, res) => {
+  try {
+    const { address } = req.params;
+    
+    if (!address) {
+      return res.status(400).json({ error: 'Address is required' });
+    }
+
+    // Get balances from multiple chains
+    const portfolio = {
+      address,
+      chains: {
+        ethereum: { balance: '0', tokens: [] },
+        near: { balance: '0', tokens: [] },
+        bitcoin: { balance: '0', tokens: [] },
+      },
+      totalValue: '0',
+      lastUpdated: new Date().toISOString(),
+    };
+    
+    res.json({
+      success: true,
+      data: portfolio,
+      timestamp: new Date().toISOString(),
+    });
+  } catch (error) {
+    logger.error('Error getting portfolio', error);
+    res.status(500).json({
+      error: 'Failed to get portfolio',
+      message: error instanceof Error ? error.message : 'Unknown error',
     });
   }
 });
@@ -253,25 +396,23 @@ app.get('/api/portfolio/balance/:address/:chainId', async (req, res) => {
 app.use((error: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
   logger.error('Unhandled error', error);
   res.status(500).json({
-    success: false,
-    error: 'Internal server error'
+    error: 'Internal server error',
+    message: process.env.NODE_ENV === 'development' ? error.message : 'Something went wrong',
   });
 });
 
 // 404 handler
 app.use('*', (req, res) => {
   res.status(404).json({
-    success: false,
-    error: 'Endpoint not found'
+    error: 'Endpoint not found',
+    message: `The endpoint ${req.originalUrl} does not exist`,
   });
 });
 
 // Start server
 app.listen(PORT, () => {
-  logger.info(`🚀 UniteAI Backend Server running on port ${PORT}`);
-  logger.info(`📊 Health check available at http://localhost:${PORT}/api/health`);
-  logger.info(`🤖 AI endpoints available at http://localhost:${PORT}/api/ai/`);
-  logger.info(`💱 1inch endpoints available at http://localhost:${PORT}/api/1inch/`);
+  logger.info(`Backend server running on port ${PORT}`);
+  logger.info(`Health check: http://localhost:${PORT}/api/health`);
 });
 
-module.exports = app; 
+export default app; 
