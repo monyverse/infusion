@@ -2,7 +2,7 @@
   "name": "uniteai-wallet",
   "version": "1.0.0",
   "description": "AI-Powered Cross-Chain Wallet Automation with 1inch Fusion+ Integration",
-  "type": "module",
+
   "main": "index.js",
   "scripts": {
     "dev": "concurrently \"npm run dev:frontend\" \"npm run dev:backend\" \"npm run dev:ai\"",

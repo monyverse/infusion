@@ -1,70 +1,207 @@
-require('dotenv').config({ path: './env.local' });
 const express = require('express');
 const cors = require('cors');
-const axios = require('axios');
+const helmet = require('helmet');
+const rateLimit = require('express-rate-limit');
+
 const app = express();
 const PORT = process.env.PORT || 3003;
 
-// Middleware
-app.use(cors());
-app.use(express.json());
+// Security middleware
+app.use(helmet());
+app.use(cors({
+  origin: process.env.FRONTEND_URL || 'http://localhost:3000',
+  credentials: true,
+}));
 
-// NEAR Cross-Chain Swap endpoints
-app.post('/api/near/cross-chain-quote', async (req, res) => {
+// Rate limiting
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // limit each IP to 100 requests per windowMs
+  message: 'Too many requests from this IP, please try again later.',
+});
+app.use('/api/', limiter);
+
+// Body parsing middleware
+app.use(express.json({ limit: '10mb' }));
+
+// Health check endpoint
+app.get('/api/health', (req, res) => {
+  res.json({
+    status: 'healthy',
+    timestamp: new Date().toISOString(),
+    services: {
+      fusionPlus: 'active',
+      near: 'active',
+      ai: 'active',
+      orders: 'active',
+    },
+  });
+});
+
+// AI Intent Processing
+app.post('/api/ai/process-intent', async (req, res) => {
   try {
-    const { fromChain, fromToken, toToken, fromAmount, userAddress, nearAccountId } = req.body;
+    const { intent, context } = req.body;
     
-    if (!fromChain || !fromToken || !toToken || !fromAmount || !userAddress || !nearAccountId) {
-      return res.status(400).json({
-        success: false,
-        error: 'Missing required parameters'
-      });
+    if (!intent) {
+      return res.status(400).json({ error: 'Intent is required' });
     }
 
-    // Mock NEAR cross-chain quote
-    const mockQuote = {
+    console.log('Processing AI intent:', { intent, context });
+    
+    // Mock AI response
+    const result = {
+      success: true,
+      intent: intent,
+      confidence: 0.95,
+      actions: [
+        {
+          type: 'swap',
+          chain: 'ethereum',
+          fromToken: 'USDC',
+          toToken: 'ETH',
+          amount: '100',
+          estimatedGas: '50000',
+        }
+      ],
+      timestamp: new Date().toISOString(),
+    };
+    
+    res.json({
+      success: true,
+      data: result,
+      timestamp: new Date().toISOString(),
+    });
+  } catch (error) {
+    console.error('Error processing AI intent:', error);
+    res.status(500).json({
+      error: 'Failed to process intent',
+      message: error.message || 'Unknown error',
+    });
+  }
+});
+
+// AI Agent Status
+app.get('/api/ai/status', (req, res) => {
+  try {
+    const status = {
+      agents: {
+        portfolio: { status: 'active', lastActivity: new Date().toISOString() },
+        trading: { status: 'active', lastActivity: new Date().toISOString() },
+        security: { status: 'active', lastActivity: new Date().toISOString() },
+      },
+      totalIntents: 150,
+      successRate: 0.98,
+    };
+    
+    res.json({
+      success: true,
+      data: status,
+      timestamp: new Date().toISOString(),
+    });
+  } catch (error) {
+    console.error('Error getting AI status:', error);
+    res.status(500).json({
+      error: 'Failed to get AI status',
+      message: error.message || 'Unknown error',
+    });
+  }
+});
+
+// Fusion+ Quote
+app.post('/api/fusion-plus/quote', async (req, res) => {
+  try {
+    const { fromToken, toToken, fromAmount, chainId } = req.body;
+    
+    if (!fromToken || !toToken || !fromAmount || !chainId) {
+      return res.status(400).json({ error: 'Missing required parameters' });
+    }
+
+    // Mock quote response
+    const quote = {
+      fromToken,
+      toToken,
+      fromAmount,
+      toAmount: (parseFloat(fromAmount) * 0.98).toString(), // 2% slippage
+      price: '2000',
+      gasEstimate: '50000',
+      protocols: ['1inch-fusion'],
+      route: [
+        {
+          protocol: '1inch-fusion',
+          fromToken,
+          toToken,
+          amount: fromAmount,
+          fee: '0.003',
+        }
+      ],
+    };
+    
+    res.json({
+      success: true,
+      data: quote,
+      timestamp: new Date().toISOString(),
+    });
+  } catch (error) {
+    console.error('Error getting Fusion+ quote:', error);
+    res.status(500).json({
+      error: 'Failed to get quote',
+      message: error.message || 'Unknown error',
+    });
+  }
+});
+
+// Fusion+ Swap
+app.post('/api/fusion-plus/swap', async (req, res) => {
+  try {
+    const { fromToken, toToken, fromAmount, toAmount, userAddress, deadline } = req.body;
+    
+    if (!fromToken || !toToken || !fromAmount || !toAmount || !userAddress) {
+      return res.status(400).json({ error: 'Missing required parameters' });
+    }
+
+    // Mock swap response
+    const result = {
+      orderHash: '0x' + Math.random().toString(36).substr(2, 9),
+      status: 'submitted',
+      txHash: '0x' + Math.random().toString(36).substr(2, 9),
+      gasUsed: '50000',
+      gasPrice: '20000000000',
+    };
+    
+    res.json({
+      success: true,
+      data: result,
+      timestamp: new Date().toISOString(),
+    });
+  } catch (error) {
+    console.error('Error executing Fusion+ swap:', error);
+    res.status(500).json({
+      error: 'Failed to execute swap',
+      message: error.message || 'Unknown error',
+    });
+  }
+});
+
+// NEAR Cross-Chain Quote
+app.post('/api/near/cross-chain-quote', async (req, res) => {
+  try {
+    const { fromChain, fromToken, toToken, fromAmount, toAmount, userAddress, nearAccountId } = req.body;
+    
+    if (!fromChain || !fromToken || !toToken || !fromAmount || !toAmount || !userAddress || !nearAccountId) {
+      return res.status(400).json({ error: 'Missing required parameters' });
+    }
+
+    // Mock cross-chain quote
+    const quote = {
       fromChain,
       toChain: 'near',
       fromToken,
       toToken,
       fromAmount,
-      toAmount: (parseFloat(fromAmount) * 0.98).toString(), // Mock 2% slippage
-      evmQuote: {
-        fromToken,
-        toToken,
-        fromAmount,
-        toAmount: (parseFloat(fromAmount) * 0.985).toString(),
-        price: '1.0',
-        gasEstimate: '300000',
-        protocols: ['1inch-fusion'],
-        route: [{
-          chain: fromChain,
-          protocol: '1inch-fusion',
-          fromToken,
-          toToken,
-          amount: fromAmount,
-          fee: '0.003'
-        }]
-      },
-      nearQuote: {
-        fromToken: toToken,
-        toToken: fromToken,
-        fromAmount: (parseFloat(fromAmount) * 0.98).toString(),
-        toAmount: fromAmount,
-        price: '1.0',
-        gasEstimate: '30000000000000',
-        protocols: ['ref-finance'],
-        route: [{
-          protocol: 'ref-finance',
-          fromToken: toToken,
-          toToken: fromToken,
-          amount: (parseFloat(fromAmount) * 0.98).toString(),
-          fee: '0.002',
-          poolId: '1'
-        }]
-      },
+      toAmount,
       estimatedTime: 300,
-      gasEstimate: '300000',
+      gasEstimate: '50000',
       totalFee: '0.005',
       route: [
         {
@@ -73,659 +210,219 @@ app.post('/api/near/cross-chain-quote', async (req, res) => {
           fromToken,
           toToken,
           amount: fromAmount,
-          fee: '0.003'
+          fee: '0.003',
         },
         {
           chain: 'near',
           protocol: 'ref-finance',
           fromToken: toToken,
           toToken: fromToken,
-          amount: (parseFloat(fromAmount) * 0.98).toString(),
-          fee: '0.002'
+          amount: toAmount,
+          fee: '0.002',
         }
-      ]
+      ],
     };
-
+    
     res.json({
       success: true,
-      data: mockQuote,
-      timestamp: new Date().toISOString()
+      data: quote,
+      timestamp: new Date().toISOString(),
     });
-
   } catch (error) {
-    console.error('NEAR cross-chain quote error:', error);
+    console.error('Error getting NEAR cross-chain quote:', error);
     res.status(500).json({
-      success: false,
-      error: error.message || 'Failed to get NEAR cross-chain quote'
+      error: 'Failed to get cross-chain quote',
+      message: error.message || 'Unknown error',
     });
   }
 });
 
+// NEAR Cross-Chain Swap
 app.post('/api/near/cross-chain-swap', async (req, res) => {
   try {
     const { fromChain, fromToken, toToken, fromAmount, toAmount, userAddress, nearAccountId, deadline, timelock } = req.body;
     
     if (!fromChain || !fromToken || !toToken || !fromAmount || !toAmount || !userAddress || !nearAccountId) {
-      return res.status(400).json({
-        success: false,
-        error: 'Missing required parameters'
-      });
+      return res.status(400).json({ error: 'Missing required parameters' });
     }
 
-    // Mock NEAR cross-chain swap execution
-    const mockResult = {
+    // Mock cross-chain swap
+    const result = {
       evmOrder: {
-        orderHash: `0x${Math.random().toString(36).substr(2, 40)}`,
+        orderHash: '0x' + Math.random().toString(36).substr(2, 9),
         status: 'submitted',
-        txHash: `0x${Math.random().toString(36).substr(2, 64)}`
+        txHash: '0x' + Math.random().toString(36).substr(2, 9),
       },
       nearOrder: {
-        orderId: `near_fusion_${Date.now()}_${Math.random().toString(36).substr(2, 8)}`,
+        orderId: 'order_' + Math.random().toString(36).substr(2, 9),
         status: 'pending',
-        hashlock: `0x${Math.random().toString(36).substr(2, 64)}`,
-        secret: `0x${Math.random().toString(36).substr(2, 64)}`,
-        expiresAt: Date.now() + (timelock || 3600) * 1000
+        hashlock: '0x' + Math.random().toString(36).substr(2, 9),
+        secret: 'secret_' + Math.random().toString(36).substr(2, 9),
+        expiresAt: Date.now() + (timelock || 3600) * 1000,
       },
-      crossChainSwapId: `cc_swap_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      crossChainSwapId: 'cc_swap_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
       status: 'initiated',
       estimatedTime: timelock || 3600,
       nextSteps: [
         '1. Wait for EVM order to be filled',
         '2. Execute NEAR swap using revealed secret',
         '3. Complete cross-chain transfer'
-      ]
+      ],
     };
-
+    
     res.json({
       success: true,
-      data: mockResult,
-      timestamp: new Date().toISOString()
+      data: result,
+      timestamp: new Date().toISOString(),
     });
-
   } catch (error) {
-    console.error('NEAR cross-chain swap error:', error);
+    console.error('Error executing NEAR cross-chain swap:', error);
     res.status(500).json({
-      success: false,
-      error: error.message || 'Failed to execute NEAR cross-chain swap'
+      error: 'Failed to execute cross-chain swap',
+      message: error.message || 'Unknown error',
     });
   }
 });
 
-app.get('/api/near/swap-status/:swapId', async (req, res) => {
+// NEAR Account Balance
+app.get('/api/near/balance/:accountId', async (req, res) => {
   try {
-    const { swapId } = req.params;
+    const { accountId } = req.params;
     
-    if (!swapId) {
-      return res.status(400).json({
-        success: false,
-        error: 'Swap ID is required'
-      });
+    if (!accountId) {
+      return res.status(400).json({ error: 'Account ID is required' });
     }
 
-    // Mock swap status
-    const mockStatus = {
-      swapId,
-      status: 'pending',
-      evmStatus: 'filled',
-      nearStatus: 'pending',
-      progress: Math.floor(Math.random() * 100),
-      estimatedCompletion: Date.now() + 1800000, // 30 minutes
-      lastUpdated: Date.now()
+    // Mock balance response
+    const balance = '1000000000000000000000000'; // 1 NEAR
+    
+    res.json({
+      success: true,
+      data: { accountId, balance },
+      timestamp: new Date().toISOString(),
+    });
+  } catch (error) {
+    console.error('Error getting NEAR balance:', error);
+    res.status(500).json({
+      error: 'Failed to get balance',
+      message: error.message || 'Unknown error',
+    });
+  }
+});
+
+// Order Management
+app.post('/api/orders/create', async (req, res) => {
+  try {
+    const { type, maker, taker, timelock } = req.body;
+    
+    if (!type || !maker || !taker || !timelock) {
+      return res.status(400).json({ error: 'Missing required parameters' });
+    }
+
+    // Mock order creation
+    const order = {
+      id: 'order_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
+      type,
+      status: 'created',
+      maker,
+      taker,
+      timelock,
+      createdAt: Date.now(),
+      expiresAt: Date.now() + timelock * 1000,
     };
-
+    
     res.json({
       success: true,
-      data: mockStatus,
-      timestamp: new Date().toISOString()
+      data: order,
+      timestamp: new Date().toISOString(),
     });
-
   } catch (error) {
-    console.error('NEAR swap status error:', error);
+    console.error('Error creating order:', error);
     res.status(500).json({
-      success: false,
-      error: error.message || 'Failed to get NEAR swap status'
+      error: 'Failed to create order',
+      message: error.message || 'Unknown error',
     });
   }
 });
 
-// Enhanced 1inch API proxy with validation
-app.get('/', async (req, res) => {
+// Portfolio Management
+app.get('/api/portfolio/:address', async (req, res) => {
   try {
-    const { url } = req.query;
+    const { address } = req.params;
     
-    if (!url) {
-      return res.status(400).json({
-        success: false,
-        error: 'URL parameter is required'
-      });
+    if (!address) {
+      return res.status(400).json({ error: 'Address is required' });
     }
 
-    // Validate URL to ensure it's a 1inch API endpoint
-    if (!url.startsWith('https://api.1inch.dev') && !url.startsWith('https://fusion.1inch.io')) {
-      return res.status(400).json({
-        success: false,
-        error: 'URL must be a valid 1inch API endpoint'
-      });
-    }
-
-    console.log('Proxying request to:', url);
-
-    // Get the 1inch API key from environment
-    const inchApiKey = process.env.INCH_API_KEY;
-    
-    if (!inchApiKey) {
-      return res.status(500).json({
-        success: false,
-        error: '1inch API key not configured'
-      });
-    }
-
-    // Make the request to 1inch API
-    const response = await axios.get(url, {
-      headers: {
-        'Authorization': `Bearer ${inchApiKey}`,
-        'Accept': 'application/json',
-        'User-Agent': 'UniteAI-Wallet/1.0'
+    // Mock portfolio response
+    const portfolio = {
+      address,
+      chains: {
+        ethereum: { 
+          balance: '1.5', 
+          tokens: [
+            { symbol: 'ETH', balance: '1.5', usdValue: '3000' },
+            { symbol: 'USDC', balance: '1000', usdValue: '1000' }
+          ] 
+        },
+        near: { 
+          balance: '10', 
+          tokens: [
+            { symbol: 'NEAR', balance: '10', usdValue: '50' },
+            { symbol: 'USDC', balance: '500', usdValue: '500' }
+          ] 
+        },
+        bitcoin: { 
+          balance: '0.1', 
+          tokens: [
+            { symbol: 'BTC', balance: '0.1', usdValue: '4000' }
+          ] 
+        },
       },
-      timeout: 10000
-    });
-
+      totalValue: '8550',
+      lastUpdated: new Date().toISOString(),
+    };
+    
     res.json({
       success: true,
-      data: response.data,
-      timestamp: new Date().toISOString()
+      data: portfolio,
+      timestamp: new Date().toISOString(),
     });
-
   } catch (error) {
-    console.error('Proxy error:', error.message);
-    
-    if (error.response) {
-      res.status(error.response.status).json({
-        success: false,
-        error: error.response.data || 'Request failed',
-        status: error.response.status
-      });
-    } else if (error.request) {
-      res.status(500).json({
-        success: false,
-        error: 'No response received from 1inch API'
-      });
-    } else {
-      res.status(500).json({
-        success: false,
-        error: error.message || 'Request setup failed'
-      });
-    }
-  }
-});
-
-// POST proxy endpoint for 1inch API
-app.post('/', async (req, res) => {
-  try {
-    const { url, data } = req.body;
-    
-    if (!url) {
-      return res.status(400).json({
-        success: false,
-        error: 'URL parameter is required'
-      });
-    }
-
-    // Validate URL to ensure it's a 1inch API endpoint
-    if (!url.startsWith('https://api.1inch.dev') && !url.startsWith('https://fusion.1inch.io')) {
-      return res.status(400).json({
-        success: false,
-        error: 'URL must be a valid 1inch API endpoint'
-      });
-    }
-
-    console.log('Proxying POST request to:', url);
-
-    // Get the 1inch API key from environment
-    const inchApiKey = process.env.INCH_API_KEY;
-    
-    if (!inchApiKey) {
-      return res.status(500).json({
-        success: false,
-        error: '1inch API key not configured'
-      });
-    }
-
-    // Make the POST request to 1inch API
-    const response = await axios.post(url, data || req.body, {
-      headers: {
-        'Authorization': `Bearer ${inchApiKey}`,
-        'Accept': 'application/json',
-        'Content-Type': 'application/json',
-        'User-Agent': 'UniteAI-Wallet/1.0'
-      },
-      timeout: 10000
-    });
-
-    res.json({
-      success: true,
-      data: response.data,
-      timestamp: new Date().toISOString()
-    });
-
-  } catch (error) {
-    console.error('POST proxy error:', error.message);
-    
-    if (error.response) {
-      res.status(error.response.status).json({
-        success: false,
-        error: error.response.data || 'Request failed',
-        status: error.response.status
-      });
-    } else if (error.request) {
-      res.status(500).json({
-        success: false,
-        error: 'No response received from 1inch API'
-      });
-    } else {
-      res.status(500).json({
-        success: false,
-        error: error.message || 'Request setup failed'
-      });
-    }
-  }
-});
-
-// Health check endpoint
-app.get('/api/health', (req, res) => {
-  res.json({
-    status: 'healthy',
-    timestamp: new Date().toISOString(),
-    services: {
-      backend: true,
-      ai: true,
-      oneinch: !!process.env.INCH_API_KEY
-    }
-  });
-});
-
-// AI endpoints
-app.post('/api/ai/process-intent', (req, res) => {
-  const { intent, context } = req.body;
-  
-  console.log('Processing AI intent:', intent);
-  
-  // Mock AI processing
-  const response = {
-    intent: intent,
-    action: 'swap',
-    parameters: {
-      fromToken: 'USDC',
-      toToken: 'ETH',
-      amount: '100',
-      chain: 'ethereum'
-    },
-    confidence: 0.95,
-    timestamp: new Date().toISOString()
-  };
-  
-  res.json({
-    success: true,
-    data: response
-  });
-});
-
-app.get('/api/ai/status', (req, res) => {
-  res.json({
-    status: 'active',
-    agents: ['portfolio-manager', 'risk-assessor'],
-    uptime: '2h 15m',
-    timestamp: new Date().toISOString()
-  });
-});
-
-// Enhanced 1inch API proxy endpoints
-app.get('/api/1inch/proxy', async (req, res) => {
-  try {
-    const { url } = req.query;
-    
-    if (!url) {
-      return res.status(400).json({
-        success: false,
-        error: 'URL parameter is required'
-      });
-    }
-
-    console.log('Proxying 1inch request to:', url);
-
-    // Get the 1inch API key from environment
-    const inchApiKey = process.env.INCH_API_KEY;
-    
-    if (!inchApiKey) {
-      return res.status(500).json({
-        success: false,
-        error: '1inch API key not configured'
-      });
-    }
-
-    // Make the request to 1inch API
-    const response = await axios.get(url, {
-      headers: {
-        'Authorization': `Bearer ${inchApiKey}`,
-        'Accept': 'application/json',
-        'User-Agent': 'UniteAI-Wallet/1.0'
-      },
-      timeout: 10000
-    });
-
-    res.json({
-      success: true,
-      data: response.data,
-      timestamp: new Date().toISOString()
-    });
-
-  } catch (error) {
-    console.error('1inch proxy error:', error.message);
-    
-    if (error.response) {
-      res.status(error.response.status).json({
-        success: false,
-        error: error.response.data || '1inch API request failed',
-        status: error.response.status
-      });
-    } else if (error.request) {
-      res.status(500).json({
-        success: false,
-        error: 'No response received from 1inch API'
-      });
-    } else {
-      res.status(500).json({
-        success: false,
-        error: error.message || '1inch request setup failed'
-      });
-    }
-  }
-});
-
-// Consolidated Fusion+ endpoints
-app.post('/api/fusion-plus/quote', async (req, res) => {
-  try {
-    const { fromToken, toToken, fromAmount, chainId, userAddress } = req.body;
-    
-    if (!fromToken || !toToken || !fromAmount || !chainId || !userAddress) {
-      return res.status(400).json({
-        success: false,
-        error: 'Missing required parameters'
-      });
-    }
-
-    const inchApiKey = process.env.INCH_API_KEY;
-    if (!inchApiKey) {
-      return res.status(500).json({
-        success: false,
-        error: '1inch API key not configured'
-      });
-    }
-
-    // Get quote from 1inch Fusion+ API
-    const response = await axios.get(`https://fusion.1inch.io/quote/v1.0/${chainId}/quote`, {
-      params: {
-        fromTokenAddress: fromToken,
-        toTokenAddress: toToken,
-        amount: fromAmount,
-        walletAddress: userAddress,
-        source: '1inch',
-        disableEstimate: false,
-        allowPartialFill: true
-      },
-      headers: {
-        'Authorization': `Bearer ${inchApiKey}`,
-        'Accept': 'application/json'
-      }
-    });
-
-    res.json({
-      success: true,
-      data: response.data,
-      timestamp: new Date().toISOString()
-    });
-
-  } catch (error) {
-    console.error('Fusion+ quote error:', error.message);
+    console.error('Error getting portfolio:', error);
     res.status(500).json({
-      success: false,
-      error: error.message || 'Failed to get Fusion+ quote'
+      error: 'Failed to get portfolio',
+      message: error.message || 'Unknown error',
     });
   }
-});
-
-app.post('/api/fusion-plus/swap', async (req, res) => {
-  try {
-    const { fromToken, toToken, fromAmount, toAmount, userAddress, chainId, deadline } = req.body;
-    
-    if (!fromToken || !toToken || !fromAmount || !toAmount || !userAddress || !chainId) {
-      return res.status(400).json({
-        success: false,
-        error: 'Missing required parameters'
-      });
-    }
-
-    const inchApiKey = process.env.INCH_API_KEY;
-    if (!inchApiKey) {
-      return res.status(500).json({
-        success: false,
-        error: '1inch API key not configured'
-      });
-    }
-
-    // Create order with 1inch Fusion+ API
-    const orderResponse = await axios.post(`https://fusion.1inch.io/order/v1.0/${chainId}/order`, {
-      fromTokenAddress: fromToken,
-      toTokenAddress: toToken,
-      amount: fromAmount,
-      walletAddress: userAddress,
-      source: '1inch',
-      disableEstimate: false,
-      allowPartialFill: true,
-      deadline: deadline || Math.floor(Date.now() / 1000) + 3600
-    }, {
-      headers: {
-        'Authorization': `Bearer ${inchApiKey}`,
-        'Content-Type': 'application/json'
-      }
-    });
-
-    res.json({
-      success: true,
-      data: orderResponse.data,
-      timestamp: new Date().toISOString()
-    });
-
-  } catch (error) {
-    console.error('Fusion+ swap error:', error.message);
-    res.status(500).json({
-      success: false,
-      error: error.message || 'Failed to execute Fusion+ swap'
-    });
-  }
-});
-
-app.post('/api/fusion-plus/cross-chain-quote', async (req, res) => {
-  try {
-    const { fromChainId, toChainId, fromToken, toToken, fromAmount, userAddress } = req.body;
-    
-    if (!fromChainId || !toChainId || !fromToken || !toToken || !fromAmount || !userAddress) {
-      return res.status(400).json({
-        success: false,
-        error: 'Missing required parameters'
-      });
-    }
-
-    const inchApiKey = process.env.INCH_API_KEY;
-    if (!inchApiKey) {
-      return res.status(500).json({
-        success: false,
-        error: '1inch API key not configured'
-      });
-    }
-
-    // Get cross-chain quote from 1inch API
-    const response = await axios.get(`https://api.1inch.dev/swap/v6.0/${fromChainId}/quote`, {
-      params: {
-        src: fromToken,
-        dst: toToken,
-        amount: fromAmount,
-        from: userAddress,
-        chainId: toChainId
-      },
-      headers: {
-        'Authorization': `Bearer ${inchApiKey}`,
-        'Accept': 'application/json'
-      }
-    });
-
-    res.json({
-      success: true,
-      data: response.data,
-      timestamp: new Date().toISOString()
-    });
-
-  } catch (error) {
-    console.error('Cross-chain quote error:', error.message);
-    res.status(500).json({
-      success: false,
-      error: error.message || 'Failed to get cross-chain quote'
-    });
-  }
-});
-
-app.post('/api/fusion-plus/cross-chain-swap', async (req, res) => {
-  try {
-    const { fromChainId, toChainId, fromToken, toToken, fromAmount, toAmount, userAddress } = req.body;
-    
-    if (!fromChainId || !toChainId || !fromToken || !toToken || !fromAmount || !toAmount || !userAddress) {
-      return res.status(400).json({
-        success: false,
-        error: 'Missing required parameters'
-      });
-    }
-
-    const inchApiKey = process.env.INCH_API_KEY;
-    if (!inchApiKey) {
-      return res.status(500).json({
-        success: false,
-        error: '1inch API key not configured'
-      });
-    }
-
-    // Execute cross-chain swap with 1inch API
-    const response = await axios.post(`https://api.1inch.dev/swap/v6.0/${fromChainId}/swap`, {
-      src: fromToken,
-      dst: toToken,
-      amount: fromAmount,
-      from: userAddress,
-      chainId: toChainId,
-      toAmount: toAmount
-    }, {
-      headers: {
-        'Authorization': `Bearer ${inchApiKey}`,
-        'Content-Type': 'application/json'
-      }
-    });
-
-    res.json({
-      success: true,
-      data: response.data,
-      timestamp: new Date().toISOString()
-    });
-
-  } catch (error) {
-    console.error('Cross-chain swap error:', error.message);
-    res.status(500).json({
-      success: false,
-      error: error.message || 'Failed to execute cross-chain swap'
-    });
-  }
-});
-
-// Legacy 1inch API endpoints (for backward compatibility)
-app.post('/api/1inch/quote', (req, res) => {
-  const { fromToken, toToken, amount, chainId } = req.body;
-  
-  // Mock 1inch quote response
-  const mockQuote = {
-    fromToken,
-    toToken,
-    fromAmount: amount,
-    toAmount: (parseFloat(amount) * 0.99).toString(), // 1% slippage
-    price: '0.99',
-    gas: '0.002',
-    protocols: ['Uniswap V3', '1inch Fusion+'],
-    estimatedTime: 300,
-    protocol: '1inch'
-  };
-  
-  res.json({
-    success: true,
-    data: mockQuote,
-    timestamp: new Date().toISOString()
-  });
-});
-
-// Portfolio balance endpoint
-app.get('/api/portfolio/balance/:address/:chainId', (req, res) => {
-  const { address, chainId } = req.params;
-  
-  // Mock portfolio balance
-  const mockBalance = {
-    address,
-    chainId: parseInt(chainId),
-    tokens: [
-      {
-        symbol: 'ETH',
-        balance: '2.5',
-        valueUSD: '7500',
-        priceUSD: '3000'
-      },
-      {
-        symbol: 'USDC',
-        balance: '5000',
-        valueUSD: '5000',
-        priceUSD: '1'
-      }
-    ],
-    totalValueUSD: '12500',
-    timestamp: new Date().toISOString()
-  };
-  
-  res.json({
-    success: true,
-    data: mockBalance
-  });
 });
 
 // Error handling middleware
 app.use((error, req, res, next) => {
   console.error('Unhandled error:', error);
   res.status(500).json({
-    success: false,
-    error: 'Internal server error'
+    error: 'Internal server error',
+    message: process.env.NODE_ENV === 'development' ? error.message : 'Something went wrong',
   });
 });
 
 // 404 handler
 app.use('*', (req, res) => {
   res.status(404).json({
-    success: false,
-    error: 'Endpoint not found'
+    error: 'Endpoint not found',
+    message: `The endpoint ${req.originalUrl} does not exist`,
   });
 });
 
 // Start server
 app.listen(PORT, () => {
-  console.log(`🚀 UniteAI Backend Server running on port ${PORT}`);
-  console.log(`📊 Health check available at http://localhost:${PORT}/api/health`);
-  console.log(`🤖 AI endpoints available at http://localhost:${PORT}/api/ai/`);
-  console.log(`💱 1inch endpoints available at http://localhost:${PORT}/api/1inch/`);
-  console.log(`🔥 Fusion+ endpoints available at http://localhost:${PORT}/api/fusion-plus/`);
-  console.log(`🌐 General proxy available at http://localhost:${PORT}/?url=...`);
-  console.log(`🔗 1inch proxy available at http://localhost:${PORT}/api/1inch/proxy?url=...`);
-  console.log(`✅ 1inch API Key: ${process.env.INCH_API_KEY ? 'Configured' : 'NOT SET'}`);
+  console.log(`🚀 Backend server running on port ${PORT}`);
+  console.log(`📊 Health check: http://localhost:${PORT}/api/health`);
+  console.log(`🤖 AI endpoints: http://localhost:${PORT}/api/ai/`);
+  console.log(`💱 Fusion+ endpoints: http://localhost:${PORT}/api/fusion-plus/`);
+  console.log(`🌐 NEAR endpoints: http://localhost:${PORT}/api/near/`);
+  console.log(`📋 Order endpoints: http://localhost:${PORT}/api/orders/`);
+  console.log(`💼 Portfolio endpoints: http://localhost:${PORT}/api/portfolio/`);
 });
 
 module.exports = app; 
