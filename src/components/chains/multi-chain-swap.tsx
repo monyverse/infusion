@@ -271,8 +271,8 @@ export const MultiChainSwap: React.FC = () => {
       if (isCrossChain) {
         if (fromChain.type === 'evm' && toChain.type === 'evm') {
           await fusionPlus.getCrossChainQuote({
-            fromChainId: fromChain.chainId!,
-            toChainId: toChain.chainId!,
+            fromChainId: fromChain.chainId ?? 1,
+            toChainId: toChain.chainId ?? 1,
             fromToken: fromToken.address,
             toToken: toToken.address,
             fromAmount: fromAmount,
