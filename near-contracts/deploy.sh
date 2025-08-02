@@ -14,7 +14,7 @@ NC='\033[0m' # No Color
 
 # Configuration
 NETWORK="testnet"
-OWNER_ACCOUNT=""
+OWNER_ACCOUNT="${OWNER_ACCOUNT:-}"
 ESCROW_CONTRACT=""
 SOLVER_CONTRACT=""
 POOL_CONTRACT=""
@@ -69,8 +69,15 @@ build_contracts() {
     
     cd "$(dirname "$0")"
     
-    # Build all contracts
-    cargo build --release --workspace
+    # Build all contracts using cargo near
+    print_status "Building fusion-escrow contract..."
+    cd fusion-escrow && cargo near build non-reproducible-wasm && cd ..
+    
+    print_status "Building fusion-pool contract..."
+    cd fusion-pool && cargo near build non-reproducible-wasm && cd ..
+    
+    print_status "Building fusion-solver contract..."
+    cd fusion-solver && cargo near build non-reproducible-wasm && cd ..
     
     print_success "Contracts built successfully"
 }
@@ -78,6 +85,25 @@ build_contracts() {
 # Function to create test account using NEAR CLI v4
 create_test_account() {
     print_status "Creating test account..."
+    
+    # Check if we're logged in to NEAR
+    if ! near list-keys 2>/dev/null | grep -q "ed25519:"; then
+        print_error "Not logged in to NEAR. Please login first:"
+        print_status "1. Run: near login"
+        print_status "2. Follow the browser instructions"
+        print_status "3. Enter your account name when prompted"
+        print_status "4. Then run this script again"
+        exit 1
+    fi
+    
+    # Check if OWNER_ACCOUNT is set in environment
+    if [ -n "$OWNER_ACCOUNT" ]; then
+        print_success "Using existing account: $OWNER_ACCOUNT"
+        ESCROW_CONTRACT="escrow.${OWNER_ACCOUNT#*.}"
+        SOLVER_CONTRACT="solver.${OWNER_ACCOUNT#*.}"
+        POOL_CONTRACT="pool.${OWNER_ACCOUNT#*.}"
+        return 0
+    fi
     
     # Generate a random account name
     local account_name="fusion-test-$(date +%s)"
@@ -94,22 +120,29 @@ create_test_account() {
         
         print_success "Test account created: $OWNER_ACCOUNT"
     else
-        print_warning "Failed to create account automatically. Using manual account creation."
-        print_status "Please create an account manually using:"
-        print_status "near create-account uniteai-wallet.testnet --masterAccount testnet --initialBalance 50"
-        print_status "Then set OWNER_ACCOUNT environment variable:"
-        print_status "export OWNER_ACCOUNT=uniteai-wallet.testnet"
-        
-        # Check if OWNER_ACCOUNT is set in environment
-        if [ -n "$OWNER_ACCOUNT" ]; then
-            print_success "Using existing account: $OWNER_ACCOUNT"
-            ESCROW_CONTRACT="escrow.${OWNER_ACCOUNT#*.}"
-            SOLVER_CONTRACT="solver.${OWNER_ACCOUNT#*.}"
-            POOL_CONTRACT="pool.${OWNER_ACCOUNT#*.}"
-        else
-            print_error "No account specified. Please set OWNER_ACCOUNT environment variable."
-            exit 1
-        fi
+        print_warning "Failed to create account automatically."
+        print_status ""
+        print_status "=== MANUAL ACCOUNT SETUP REQUIRED ==="
+        print_status ""
+        print_status "Option 1: Create account manually:"
+        print_status "1. Visit: https://testnet.mynearwallet.com/"
+        print_status "2. Create a new account (e.g., uniteai-wallet.testnet)"
+        print_status "3. Set environment variable:"
+        print_status "   export OWNER_ACCOUNT=uniteai-wallet.testnet"
+        print_status "4. Run this script again"
+        print_status ""
+        print_status "Option 2: Use existing account:"
+        print_status "1. Set environment variable with your existing account:"
+        print_status "   export OWNER_ACCOUNT=your-account.testnet"
+        print_status "2. Run this script again"
+        print_status ""
+        print_status "Option 3: Skip account creation and deploy to existing account:"
+        print_status "1. Set environment variable:"
+        print_status "   export OWNER_ACCOUNT=your-account.testnet"
+        print_status "   export SKIP_ACCOUNT_CREATION=true"
+        print_status "2. Run this script again"
+        print_status ""
+        exit 1
     fi
 }
 
@@ -117,20 +150,12 @@ create_test_account() {
 deploy_escrow() {
     print_status "Deploying Fusion Escrow contract..."
     
-    # Create subaccount for escrow contract
-    if near create-account "$ESCROW_CONTRACT" --masterAccount "$OWNER_ACCOUNT" --initialBalance 10; then
-        print_success "Created escrow subaccount: $ESCROW_CONTRACT"
-    else
-        print_warning "Failed to create escrow subaccount. Using existing account."
-    fi
-    
     # Deploy contract
-    if [ -f "target/release/fusion_escrow.wasm" ]; then
-        near deploy "$ESCROW_CONTRACT" \
-            --wasmFile target/release/fusion_escrow.wasm \
+    if [ -f "target/near/fusion_escrow/fusion_escrow.wasm" ]; then
+        near deploy "$ESCROW_CONTRACT" target/near/fusion_escrow/fusion_escrow.wasm \
             --initFunction new \
             --initArgs "{\"owner\": \"$OWNER_ACCOUNT\"}" \
-            --accountId "$OWNER_ACCOUNT"
+            --networkId testnet
         
         print_success "Escrow contract deployed to: $ESCROW_CONTRACT"
     else
@@ -143,20 +168,12 @@ deploy_escrow() {
 deploy_solver() {
     print_status "Deploying Fusion Solver contract..."
     
-    # Create subaccount for solver contract
-    if near create-account "$SOLVER_CONTRACT" --masterAccount "$OWNER_ACCOUNT" --initialBalance 10; then
-        print_success "Created solver subaccount: $SOLVER_CONTRACT"
-    else
-        print_warning "Failed to create solver subaccount. Using existing account."
-    fi
-    
     # Deploy contract
-    if [ -f "target/release/fusion_solver.wasm" ]; then
-        near deploy "$SOLVER_CONTRACT" \
-            --wasmFile target/release/fusion_solver.wasm \
+    if [ -f "target/near/fusion_solver/fusion_solver.wasm" ]; then
+        near deploy "$SOLVER_CONTRACT" target/near/fusion_solver/fusion_solver.wasm \
             --initFunction new \
             --initArgs "{\"owner\": \"$OWNER_ACCOUNT\", \"escrow_contract\": \"$ESCROW_CONTRACT\"}" \
-            --accountId "$OWNER_ACCOUNT"
+            --networkId testnet
         
         print_success "Solver contract deployed to: $SOLVER_CONTRACT"
     else
@@ -169,20 +186,12 @@ deploy_solver() {
 deploy_pool() {
     print_status "Deploying Fusion Pool contract..."
     
-    # Create subaccount for pool contract
-    if near create-account "$POOL_CONTRACT" --masterAccount "$OWNER_ACCOUNT" --initialBalance 10; then
-        print_success "Created pool subaccount: $POOL_CONTRACT"
-    else
-        print_warning "Failed to create pool subaccount. Using existing account."
-    fi
-    
     # Deploy contract
-    if [ -f "target/release/fusion_pool.wasm" ]; then
-        near deploy "$POOL_CONTRACT" \
-            --wasmFile target/release/fusion_pool.wasm \
+    if [ -f "target/near/fusion_pool/fusion_pool.wasm" ]; then
+        near deploy "$POOL_CONTRACT" target/near/fusion_pool/fusion_pool.wasm \
             --initFunction new \
             --initArgs "{\"owner\": \"$OWNER_ACCOUNT\", \"solver_contract\": \"$SOLVER_CONTRACT\"}" \
-            --accountId "$OWNER_ACCOUNT"
+            --networkId testnet
         
         print_success "Pool contract deployed to: $POOL_CONTRACT"
     else
@@ -316,7 +325,22 @@ main() {
     
     check_prerequisites
     build_contracts
-    create_test_account
+    
+    # Check if we should skip account creation
+    if [ "$SKIP_ACCOUNT_CREATION" = "true" ]; then
+        if [ -z "$OWNER_ACCOUNT" ]; then
+            print_error "OWNER_ACCOUNT environment variable must be set when SKIP_ACCOUNT_CREATION=true"
+            exit 1
+        fi
+        print_status "Skipping account creation, using existing account: $OWNER_ACCOUNT"
+        # Deploy directly to the main account instead of subaccounts
+        ESCROW_CONTRACT="$OWNER_ACCOUNT"
+        SOLVER_CONTRACT="$OWNER_ACCOUNT"
+        POOL_CONTRACT="$OWNER_ACCOUNT"
+    else
+        create_test_account
+    fi
+    
     deploy_escrow
     deploy_solver
     deploy_pool
@@ -339,6 +363,7 @@ case "${1:-}" in
         echo "Environment Variables:"
         echo "  NETWORK        NEAR network (default: testnet)"
         echo "  OWNER_ACCOUNT  Existing account to use as owner"
+        echo "  SKIP_ACCOUNT_CREATION  Skip account creation and use existing account"
         echo
         exit 0
         ;;

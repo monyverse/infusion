@@ -133,10 +133,10 @@ impl FusionPool {
             owner,
             solver_contract,
             pools: UnorderedMap::new(b"p"),
-            solver_pools: LookupMap::new(b"sp"),
-            providers: UnorderedMap::new(b"pr"),
-            user_pools: LookupMap::new(b"up"),
-            rewards: UnorderedMap::new(b"r"),
+            solver_pools: LookupMap::new(b"s"),
+            providers: UnorderedMap::new(b"r"),
+            user_pools: LookupMap::new(b"u"),
+            rewards: UnorderedMap::new(b"w"),
             transactions: UnorderedMap::new(b"t"),
             total_pools: 0,
             total_providers: 0,
@@ -322,7 +322,7 @@ impl FusionPool {
         // Record transaction
         let tx_id = format!("tx_{}_{}", provider, env::block_timestamp());
         let transaction = PoolTransaction {
-            id: tx_id,
+            id: tx_id.clone(),
             pool_id: pool_id.clone(),
             user: provider.clone(),
             action: PoolAction::Withdraw,
@@ -370,7 +370,7 @@ impl FusionPool {
         // Record transaction
         let tx_id = format!("tx_{}_{}", provider, env::block_timestamp());
         let transaction = PoolTransaction {
-            id: tx_id,
+            id: tx_id.clone(),
             pool_id: pool_id.clone(),
             user: provider.clone(),
             action: PoolAction::ClaimRewards,

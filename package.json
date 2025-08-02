@@ -39,9 +39,13 @@
     "verify:avalanche-fuji": "hardhat verify --network avalancheFuji",
     "verify:fantom-testnet": "hardhat verify --network fantomTestnet",
     "verify:etherlink": "hardhat verify --network etherlink",
-    "near:build": "cd near-contracts && cargo build --release --workspace",
+    "near:build": "cd near-contracts/fusion-escrow && cargo near build non-reproducible-wasm && cd ../fusion-pool && cargo near build non-reproducible-wasm && cd ../fusion-solver && cargo near build non-reproducible-wasm",
     "near:deploy": "cd near-contracts && chmod +x deploy.sh && ./deploy.sh",
     "near:deploy:build-only": "cd near-contracts && chmod +x deploy.sh && ./deploy.sh --build-only",
+    "near:setup": "./scripts/setup-near.sh setup",
+    "near:create-account": "./scripts/setup-near.sh create-account",
+    "near:check-balance": "./scripts/setup-near.sh check-balance",
+    "near:full-setup": "./scripts/setup-near.sh full-setup",
     "near:test": "cd near-contracts && chmod +x deploy.sh && ./deploy.sh --test-only",
     "backend:start": "node src/backend/simple-server.js",
     "backend:dev": "nodemon src/backend/simple-server.js",
@@ -182,16 +186,6 @@
     "ts-node": "^10.9.0",
     "typechain": "^8.3.2",
     "typescript": "^5.8.3"
-  },
-  "jest": {
-    "preset": "ts-jest",
-    "testEnvironment": "node",
-    "testMatch": [
-      "**/test/**/*.test.ts",
-      "**/src/**/*.test.ts"
-    ],
-    "setupFilesAfterEnv": [
-      "<rootDir>/test/setup.ts"
-    ]
   }
+
 }

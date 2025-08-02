@@ -1,5 +1,5 @@
 use near_sdk::borsh::{self, BorshDeserialize, BorshSerialize};
-use near_sdk::collections::{LookupMap, UnorderedMap, StorageKey};
+use near_sdk::collections::{LookupMap, UnorderedMap};
 use near_sdk::json_types::{U128, U64};
 use near_sdk::serde::{Deserialize, Serialize};
 use near_sdk::{
@@ -171,11 +171,11 @@ impl FusionSolver {
             solvers: UnorderedMap::new(b"s"),
             active_solvers: UnorderedMap::new(b"a"),
             pools: UnorderedMap::new(b"p"),
-            solver_pools: LookupMap::new(StorageKey::new(b"sp")),
+            solver_pools: LookupMap::new(b"s"),
             orders: UnorderedMap::new(b"o"),
             user_orders: LookupMap::new(b"u"),
-            pending_orders: UnorderedMap::new(StorageKey::new(b"po")),
-            signatures: UnorderedMap::new(StorageKey::new(b"sig")),
+            pending_orders: UnorderedMap::new(b"q"),
+            signatures: UnorderedMap::new(b"i"),
             total_orders: 0,
             total_volume: U128(0),
             total_fees: U128(0),
