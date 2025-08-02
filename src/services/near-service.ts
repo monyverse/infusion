@@ -563,20 +563,33 @@ export class NEARService {
   }
 }
 
+/**
+ * Default NEAR configurations for different networks
+ */
 export const NEAR_CONFIGS = {
   mainnet: {
     networkId: 'mainnet',
     nodeUrl: 'https://rpc.mainnet.near.org',
     walletUrl: 'https://wallet.near.org',
     helperUrl: 'https://helper.mainnet.near.org',
-    explorerUrl: 'https://explorer.near.org',
+    explorerUrl: 'https://explorer.mainnet.near.org',
+    contracts: {
+      escrow: 'escrow.near',
+      solver: 'solver.near',
+      pool: 'pool.near',
+    },
   },
   testnet: {
     networkId: 'testnet',
-    nodeUrl: 'https://rpc.testnet.near.org',
-    walletUrl: 'https://wallet.testnet.near.org',
+    nodeUrl: 'https://testnet.near.org',
+    walletUrl: 'https://testnet.mynearwallet.com',
     helperUrl: 'https://helper.testnet.near.org',
     explorerUrl: 'https://explorer.testnet.near.org',
+    contracts: {
+      escrow: 'defiunite.testnet', // Using main account for now
+      solver: 'defiunite.testnet', // Using main account for now
+      pool: 'defiunite.testnet',   // Using main account for now
+    },
   },
 };
 

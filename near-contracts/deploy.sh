@@ -102,6 +102,31 @@ create_test_account() {
         ESCROW_CONTRACT="escrow.${OWNER_ACCOUNT#*.}"
         SOLVER_CONTRACT="solver.${OWNER_ACCOUNT#*.}"
         POOL_CONTRACT="pool.${OWNER_ACCOUNT#*.}"
+        
+        # Create subaccounts if they don't exist
+        print_status "Creating subaccounts for contracts..."
+        
+        if ! near view "$ESCROW_CONTRACT" get_statistics 2>/dev/null | grep -q "\["; then
+            print_status "Creating escrow subaccount: $ESCROW_CONTRACT"
+            near create-account "$ESCROW_CONTRACT" --masterAccount "$OWNER_ACCOUNT" --initialBalance 10
+        else
+            print_warning "Escrow subaccount already exists: $ESCROW_CONTRACT"
+        fi
+        
+        if ! near view "$SOLVER_CONTRACT" get_statistics 2>/dev/null | grep -q "\["; then
+            print_status "Creating solver subaccount: $SOLVER_CONTRACT"
+            near create-account "$SOLVER_CONTRACT" --masterAccount "$OWNER_ACCOUNT" --initialBalance 10
+        else
+            print_warning "Solver subaccount already exists: $SOLVER_CONTRACT"
+        fi
+        
+        if ! near view "$POOL_CONTRACT" get_statistics 2>/dev/null | grep -q "\["; then
+            print_status "Creating pool subaccount: $POOL_CONTRACT"
+            near create-account "$POOL_CONTRACT" --masterAccount "$OWNER_ACCOUNT" --initialBalance 10
+        else
+            print_warning "Pool subaccount already exists: $POOL_CONTRACT"
+        fi
+        
         return 0
     fi
     
@@ -152,10 +177,18 @@ deploy_escrow() {
     
     # Deploy contract
     if [ -f "target/near/fusion_escrow/fusion_escrow.wasm" ]; then
-        near deploy "$ESCROW_CONTRACT" target/near/fusion_escrow/fusion_escrow.wasm \
-            --initFunction new \
-            --initArgs "{\"owner\": \"$OWNER_ACCOUNT\"}" \
-            --networkId testnet
+        # Check if contract is already deployed
+        if near view "$ESCROW_CONTRACT" get_statistics 2>/dev/null | grep -q "\["; then
+            print_warning "Contract already deployed and initialized. Updating code only..."
+            near deploy "$ESCROW_CONTRACT" target/near/fusion_escrow/fusion_escrow.wasm \
+                --networkId testnet
+        else
+            print_status "Deploying new contract with initialization..."
+            near deploy "$ESCROW_CONTRACT" target/near/fusion_escrow/fusion_escrow.wasm \
+                --initFunction new \
+                --initArgs "{\"owner\": \"$OWNER_ACCOUNT\"}" \
+                --networkId testnet
+        fi
         
         print_success "Escrow contract deployed to: $ESCROW_CONTRACT"
     else
@@ -170,10 +203,18 @@ deploy_solver() {
     
     # Deploy contract
     if [ -f "target/near/fusion_solver/fusion_solver.wasm" ]; then
-        near deploy "$SOLVER_CONTRACT" target/near/fusion_solver/fusion_solver.wasm \
-            --initFunction new \
-            --initArgs "{\"owner\": \"$OWNER_ACCOUNT\", \"escrow_contract\": \"$ESCROW_CONTRACT\"}" \
-            --networkId testnet
+        # Check if contract is already deployed
+        if near view "$SOLVER_CONTRACT" get_statistics 2>/dev/null | grep -q "\["; then
+            print_warning "Contract already deployed and initialized. Updating code only..."
+            near deploy "$SOLVER_CONTRACT" target/near/fusion_solver/fusion_solver.wasm \
+                --networkId testnet
+        else
+            print_status "Deploying new contract with initialization..."
+            near deploy "$SOLVER_CONTRACT" target/near/fusion_solver/fusion_solver.wasm \
+                --initFunction new \
+                --initArgs "{\"owner\": \"$OWNER_ACCOUNT\", \"escrow_contract\": \"$ESCROW_CONTRACT\"}" \
+                --networkId testnet
+        fi
         
         print_success "Solver contract deployed to: $SOLVER_CONTRACT"
     else
@@ -188,10 +229,18 @@ deploy_pool() {
     
     # Deploy contract
     if [ -f "target/near/fusion_pool/fusion_pool.wasm" ]; then
-        near deploy "$POOL_CONTRACT" target/near/fusion_pool/fusion_pool.wasm \
-            --initFunction new \
-            --initArgs "{\"owner\": \"$OWNER_ACCOUNT\", \"solver_contract\": \"$SOLVER_CONTRACT\"}" \
-            --networkId testnet
+        # Check if contract is already deployed
+        if near view "$POOL_CONTRACT" get_statistics 2>/dev/null | grep -q "\["; then
+            print_warning "Contract already deployed and initialized. Updating code only..."
+            near deploy "$POOL_CONTRACT" target/near/fusion_pool/fusion_pool.wasm \
+                --networkId testnet
+        else
+            print_status "Deploying new contract with initialization..."
+            near deploy "$POOL_CONTRACT" target/near/fusion_pool/fusion_pool.wasm \
+                --initFunction new \
+                --initArgs "{\"owner\": \"$OWNER_ACCOUNT\", \"solver_contract\": \"$SOLVER_CONTRACT\"}" \
+                --networkId testnet
+        fi
         
         print_success "Pool contract deployed to: $POOL_CONTRACT"
     else
