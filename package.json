@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "concurrently \"npm run dev:frontend\" \"npm run dev:backend\" \"npm run dev:ai\"",
     "dev:frontend": "next dev",
-    "dev:backend": "PORT=3003 node src/backend/simple-server.js",
+    "dev:backend": "PORT=3003 ts-node src/backend/server.ts",
     "dev:ai": "node src/ai/simple-agent-manager.js",
     "build": "next build",
     "start": "next start",
@@ -46,7 +46,6 @@
     "near:create-account": "./scripts/setup-near.sh create-account",
     "near:check-balance": "./scripts/setup-near.sh check-balance",
     "near:full-setup": "./scripts/setup-near.sh full-setup",
-    "near:deploy": "cd near-contracts && ./deploy.sh",
     "near:deploy-final": "cd near-contracts && ./deploy-final.sh",
     "near:initialize": "cd near-contracts && ./initialize-contracts.sh",
     "near:test": "cd near-contracts && chmod +x deploy.sh && ./deploy.sh --test-only",
