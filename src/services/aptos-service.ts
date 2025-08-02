@@ -1,4 +1,4 @@
-import { AptosClient, AptosAccount, TxnBuilderTypes, BCS, MaybeHexString } from 'aptos';
+import { AptosClient, AptosAccount, TxnBuilderTypes, BCS, MaybeHexString } from '@aptos-labs/ts-sdk';
 
 export interface AptosConfig {
   nodeUrl: string;
