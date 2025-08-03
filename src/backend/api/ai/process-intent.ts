@@ -3,8 +3,11 @@ import { FusionPlusService, FUSION_PLUS_CONFIGS } from '@/services/fusion-plus'
 import { NEARService, NEAR_CONFIGS } from '@/services/near-service'
 
 export async function POST(request: NextRequest) {
+  let intent: string;
+  
   try {
-    const { intent } = await request.json()
+    const body = await request.json();
+    intent = body.intent;
 
     if (!intent || typeof intent !== 'string') {
       return NextResponse.json(

@@ -1,6 +1,6 @@
-const { BaseAgent } = require('./base-agent');
-const { AgentConfig, PortfolioAllocation, RebalancingStrategy, RiskProfile } = require('@/types/ai');
-const { OneInchAPI } = require('@/utils/1inch-api');
+import { BaseAgent } from './base-agent';
+import { AgentConfig, PortfolioAllocation, RebalancingStrategy, RiskProfile } from '@/types/ai';
+import { OneInchAPI } from '@/utils/1inch-api';
 
 class PortfolioManagerAgent extends BaseAgent {
   private oneInchAPI: OneInchAPI;
@@ -110,7 +110,7 @@ class PortfolioManagerAgent extends BaseAgent {
           results.push({ trade, success: false, error: 'No route found' });
         }
       } catch (error) {
-        results.push({ trade, success: false, error: error.message });
+        results.push({ trade, success: false, error: error instanceof Error ? error.message : 'Unknown error' });
       }
     }
 
@@ -160,7 +160,7 @@ class PortfolioManagerAgent extends BaseAgent {
         recipient: this.config.walletAddress,
       });
 
-      this.logSwap(swapResult);
+      this.logger.info('Trade executed successfully', swapResult);
       return swapResult;
     } catch (error) {
       this.logger.error(`Trade execution failed: ${error}`);
@@ -372,4 +372,4 @@ class PortfolioManagerAgent extends BaseAgent {
   }
 }
 
-module.exports = { PortfolioManagerAgent }; 
+export { PortfolioManagerAgent }; 

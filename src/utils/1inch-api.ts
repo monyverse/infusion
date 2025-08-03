@@ -1,5 +1,5 @@
 import axios from 'axios';
-const { Logger } = require('./logger');
+import { Logger } from './logger';
 
 export interface SwapQuoteRequest {
   chain: string;
@@ -400,4 +400,4 @@ class OneInchAPI {
   }
 }
 
-module.exports = { OneInchAPI }; 
+export { OneInchAPI }; 

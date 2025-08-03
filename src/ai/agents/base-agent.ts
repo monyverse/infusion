@@ -1,7 +1,7 @@
-const { OpenAI } = require('openai');
-const { z } = require('zod');
-const { Logger } = require('@/utils/logger');
-const { ChainConfig, AgentConfig, AgentResponse } = require('@/types/ai');
+import { OpenAI } from 'openai';
+import { z } from 'zod';
+import { Logger } from '@/utils/logger';
+import { ChainConfig, AgentConfig, AgentResponse } from '@/types/ai';
 
 abstract class BaseAgent {
   protected openai: OpenAI;
@@ -276,4 +276,6 @@ abstract class BaseAgent {
       // Sentry.error(error);
     }
   }
-} 
+}
+
+export { BaseAgent }; 

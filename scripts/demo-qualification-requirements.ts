@@ -1,4 +1,4 @@
-import { ethers } from "hardhat";
+import { ethers } from "ethers";
 
 /**
  * Demo script to demonstrate all qualification requirements for 1inch hackathon

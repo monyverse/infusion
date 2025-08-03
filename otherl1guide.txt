@@ -2,53 +2,7 @@ Here’s a structured list of official documentation, tutorials, and reference l
 
 🔐 Cross-Chain Atomic Swap Foundations
 Atomic Swap / HTLC Overview – how hashed timelock contracts operate across chains, the core protocol reasoning and flow 
-X (formerly Twitter)
-+15
-docs.kaleido.io
-+15
-CoinDesk
-+15
 
-Academic atomic swap protocol spec – directed‑graph coordination, secret generation, timelock strategy, and atomicity guarantees 
-arXiv
-
-Use these to adapt your existing Bitcoin/EVM implementation to other chains.
-
-🛠️ Chain-specific HTLC Documentation & Examples
-1. Sui
-Trustless Swap guide (Move) – example atomic swap app using shared objects and registries to implement HTLC-like escrow swaps on Sui 
-GetBlock.io
-+3
-Sui Documentation
-+3
-docs.garden.finance
-+3
-
-Garden Finance Sui HTLC contracts – composable HTLC implementation example on Sui using registry patterns 
-docs.kaleido.io
-+10
-docs.garden.finance
-+10
-Sui Documentation
-+10
-
-2. Near
-Chain Signatures & Atomic Swaps – NEAR chain‐signature approach to interchain swaps (used for Bitcoin/EVM) and trustless exchange logic 
-CoinDesk
-+14
-docs.near.org
-+14
-docs.garden.finance
-+14
-
-3. Bitcoin‑style chains (cash/Doge/Litecoin)
-Atomic Swap guide (bcoin/BCash) – implementation using OP_CHECKLOCKTIMEVERIFY and hashlock script examples for BCH, DOGE, LTC 
-Medium
-+2
-bcoin.io
-+2
-docs.decred.org
-+2
 
 4. General atomic swap protocol (COMIT)
 COMIT Developer Hub – HTLC protocol design and multi-chain swap coordination that you can port to any script‑based chain (e.g., Tron, XRP Ledger) that supports timelocks 
@@ -128,32 +82,13 @@ docs.decred.org
 IBC / interoperability: Cosmos / Polkadot / others via IBC or COMIT logic 
 Medium
 
-Would you like scaffolding or code snippets for a particular chain (e.g. Move‑based HTLC on Sui, Plutus on Cardano, or script‑based HTLC for Tron)? I can also help you outline repo structure and README documentation per hackathon rules.
-
-
-Sources
-You said:
-yes let's scaffold most of the chains on the list for EVM 1. Sui 2. Aptos 3. cash/Doge/Litecoin 4. Tron 5.Ton 6.Monad 7. Near 8. Starknet 9. Cardano 10. Stellar 10. XRP Ledger 11. ICP 12. Tezos 13. Polkadot 14. EOS 15. Cosmos.
-
-
-ChatGPT said:
-Evm L1 Swap Scaffold
-The scaffold has been created! It includes atomic swap strategies and tooling notes for all 15 target L1s. You can now:
 
 Dive into chain-specific sections to build or test HTLCs.
 
 Expand each section into full smart contract implementations.
 
-Use the suggested folder structure and CLI format to organize your repo.
-
 Let me know which chain you'd like to start coding for (e.g. Cairo for Starknet, Move for Aptos, Michelson for Tezos), and I’ll generate the actual contract code.
 
-You said:
-Move for Aptos and Sui
-
-
-ChatGPT said:
-Edited
 ✅ Move-based atomic swap contracts for Sui and Aptos are now scaffolded in the doc! These include:
 
 lock, redeem, and refund entry functions
@@ -538,32 +473,10 @@ export async function suiRefund(sender: Ed25519Keypair, hash: string) {
 
   console.log("🔁 Sui refund sent:", result.digest);
 }
-🗂️ Next Steps
-Would you like me to now:
-
-🔌 Hook these into index.ts CLI commands?
-
-🧪 Create unit/integration tests for both chains?
-
-🧱 Scaffold another chain (e.g. Starknet or Near)?
-
-Let me know your priority.
 
 
 
 
-
-
-
-You said:
-yes but the zip folder doesn't contain all the source you wrote
-
-
-
-2/2
-
-ChatGPT said:
-Got it! Since I can’t send you a zip directly here, I’ll help you create a full project folder structure with all the files and contents you need based on the code I wrote.
 
 Here’s exactly what you should do to get a complete working project:
 
