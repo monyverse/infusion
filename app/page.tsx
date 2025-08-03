@@ -1,5 +1,6 @@
 'use client'
 
+import { useState } from 'react'
 import { Header } from '@/components/header'
 import { Sidebar } from '@/components/sidebar'
 import { DashboardGrid } from '@/components/dashboard-grid'
@@ -13,10 +14,12 @@ import { AchievementCard } from '@/components/gamification/achievement-card'
 import { Toaster } from '@/components/ui/toaster'
 
 export default function Home() {
+  const [activeTab, setActiveTab] = useState('dashboard')
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-gray-900">
       <Header />
-      <Sidebar />
+      <Sidebar activeTab={activeTab} onTabChange={setActiveTab} />
       
       <main className="ml-64 pt-20 px-6 pb-6">
         <div className="max-w-7xl mx-auto space-y-8">
