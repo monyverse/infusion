@@ -514,6 +514,21 @@ export class NEARService {
     }
   }
 
+  async refundEscrowOrder(orderId: string) {
+    if (!this.contracts.escrow) {
+      throw new Error('Escrow contract not initialized');
+    }
+
+    try {
+      return await (this.contracts.escrow as any).refund_order({
+        order_id: orderId
+      });
+    } catch (error) {
+      console.error('❌ Failed to refund escrow order:', error);
+      throw error;
+    }
+  }
+
   async createCrossChainSwap(params: {
     evmOrderHash: string;
     evmAddress: string;

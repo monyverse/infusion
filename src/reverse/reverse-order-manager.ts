@@ -1,5 +1,5 @@
 import { OrderType, OrderStatus, Order } from '../orders/order-manager';
-import { BitcoinHTLCScripts, BitcoinHTLCUtils } from '../btc/htlc-scripts';
+import { BitcoinHTLCScripts, BitcoinHTLCUtils } from '../../btc/scripts/htlc-scripts';
 import * as crypto from 'crypto';
 import * as fs from 'fs';
 import * as path from 'path';

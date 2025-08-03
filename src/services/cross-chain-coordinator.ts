@@ -174,7 +174,7 @@ export class CrossChainCoordinator {
         });
         return {
           toAmount: quote.toAmount,
-          price: quote.price,
+          price: '0',
           gasEstimate: quote.gasEstimate
         };
       } else if (request.toChain === 'aptos') {
@@ -269,7 +269,7 @@ export class CrossChainCoordinator {
           recipient: swap.recipientAddress,
           sender: swap.userAddress,
           amount: swap.fromAmount,
-          coinType: swap.fromToken
+          tokenAddress: swap.fromToken
         };
         return await this.suiService.createHTLCLock(htlcParams);
       }
@@ -315,7 +315,7 @@ export class CrossChainCoordinator {
           recipient: swap.recipientAddress,
           sender: swap.userAddress,
           amount: swap.toAmount,
-          coinType: swap.toToken
+          tokenAddress: swap.toToken
         };
         return await this.suiService.createHTLCLock(htlcParams);
       }
