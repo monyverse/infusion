@@ -88,7 +88,7 @@ export function WalletConnect() {
         </div>
         <Button
           onClick={handleDisconnect}
-          variant="ghost"
+          variant="neutral-secondary"
           size="sm"
           className="text-gray-300 hover:text-white hover:bg-white/10 rounded-full"
         >

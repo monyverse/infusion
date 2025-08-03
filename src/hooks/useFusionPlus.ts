@@ -84,7 +84,7 @@ export function useFusionPlus(config: UseFusionPlusConfig): UseFusionPlusReturn 
   // Initialize service
   useEffect(() => {
     if (config.apiKey && config.privateKey) {
-      const rpcUrl = config.rpcUrl || FUSION_PLUS_CONFIGS.ethereum.rpcUrl;
+      const rpcUrl = config.rpcUrl || FUSION_PLUS_CONFIGS.mainnet.rpcUrl;
       
       const fusionService = createFusionPlusService({
         apiKey: config.apiKey,

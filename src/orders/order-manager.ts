@@ -1,7 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import * as crypto from 'crypto';
-import { BitcoinHTLCScripts, BitcoinHTLCUtils } from '../btc/htlc-scripts';
+import { BitcoinHTLCScripts, BitcoinHTLCUtils } from '../../btc/scripts/htlc-scripts';
 
 /**
  * Order types for atomic swaps

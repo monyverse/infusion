@@ -5,7 +5,7 @@ import * as crypto from 'crypto';
  * Based on OP_CHECKLOCKTIMEVERIFY and OP_SHA256/OP_EQUALVERIFY
  */
 export class BitcoinScriptHTLC {
-  private network: 'mainnet' | 'testnet';
+  protected network: 'mainnet' | 'testnet';
 
   constructor(network: 'mainnet' | 'testnet' = 'testnet') {
     this.network = network;

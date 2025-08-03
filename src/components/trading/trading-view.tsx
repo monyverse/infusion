@@ -286,10 +286,10 @@ export function TradingView() {
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-xl font-bold text-white">Price Chart</h2>
           <div className="flex space-x-2">
-            <Button variant="outline" size="sm" className="border-white/20 text-white hover:bg-white/10">1H</Button>
-            <Button variant="outline" size="sm" className="border-white/20 text-white hover:bg-white/10">4H</Button>
-            <Button variant="outline" size="sm" className="border-white/20 text-white hover:bg-white/10">1D</Button>
-            <Button variant="outline" size="sm" className="border-white/20 text-white hover:bg-white/10">1W</Button>
+            <Button variant="neutral-secondary" size="sm" className="border-white/20 text-white hover:bg-white/10">1H</Button>
+            <Button variant="neutral-secondary" size="sm" className="border-white/20 text-white hover:bg-white/10">4H</Button>
+            <Button variant="neutral-secondary" size="sm" className="border-white/20 text-white hover:bg-white/10">1D</Button>
+            <Button variant="neutral-secondary" size="sm" className="border-white/20 text-white hover:bg-white/10">1W</Button>
           </div>
         </div>
         <div className="h-64 bg-white/5 rounded-lg flex items-center justify-center">
