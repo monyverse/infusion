@@ -1,43 +1,62 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createCrossChainCoordinator } from '@/services/cross-chain-coordinator';
+import { createFusionPlusL1Extension, CrossChainSwapRequest } from '../../../../src/services/fusion-plus-l1-extension';
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { fromChain, toChain, fromToken, toToken, fromAmount, userAddress, recipientAddress, timelock } = body;
-
-    if (!fromChain || !toChain || !fromToken || !toToken || !fromAmount || !userAddress) {
-      return NextResponse.json(
-        { success: false, error: 'Missing required parameters' },
-        { status: 400 }
-      );
-    }
-
-    const coordinator = createCrossChainCoordinator();
-    
-    const swapStatus = await coordinator.initiateCrossChainSwap({
+    const {
       fromChain,
       toChain,
       fromToken,
       toToken,
       fromAmount,
       userAddress,
-      recipientAddress,
-      timelock
-    });
+      slippageTolerance = 0.5,
+      strategy = 'atomic'
+    } = body;
+
+    // Validate required fields
+    if (!fromChain || !toChain || !fromToken || !toToken || !fromAmount || !userAddress) {
+      return NextResponse.json(
+        { error: 'Missing required fields' },
+        { status: 400 }
+      );
+    }
+
+    // Initialize the fusion extension
+    const fusionExtension = createFusionPlusL1Extension();
+
+    // Create the swap request
+    const swapRequest: CrossChainSwapRequest = {
+      fromChain,
+      toChain,
+      fromToken,
+      toToken,
+      fromAmount,
+      userAddress,
+      slippageTolerance,
+      strategy
+    };
+
+    // Initiate the cross-chain swap
+    const swap = await fusionExtension.initiateCrossChainSwap(swapRequest);
 
     return NextResponse.json({
       success: true,
-      swapStatus,
-      timestamp: new Date().toISOString()
+      swap,
+      swapId: swap.swapId,
+      status: swap.status,
+      hashlock: swap.hashlock,
+      timelock: swap.timelock,
+      expiresAt: swap.expiresAt
     });
 
   } catch (error) {
     console.error('Error initiating cross-chain swap:', error);
     return NextResponse.json(
       { 
-        success: false, 
-        error: error instanceof Error ? error.message : 'Unknown error occurred'
+        error: 'Failed to initiate swap',
+        details: error instanceof Error ? error.message : 'Unknown error'
       },
       { status: 500 }
     );

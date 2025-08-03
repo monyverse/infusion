@@ -5,7 +5,7 @@ import { AptosService, APTOS_CONFIGS } from './aptos-service';
 import { SuiService, SUI_CONFIGS } from './sui-service';
 import * as crypto from 'crypto';
 
-// L1 Chain Service Interfaces
+// Enhanced L1 Chain Service Interfaces
 export interface L1ChainService {
   initialize(): Promise<void>;
   createHTLC(params: HTLCParams): Promise<string>;
@@ -13,6 +13,10 @@ export interface L1ChainService {
   refundHTLC(htlcId: string): Promise<string>;
   getBalance(address: string): Promise<string>;
   getHTLCStatus(htlcId: string): Promise<HTLCStatus>;
+  getSwapQuote(params: SwapQuoteParams): Promise<SwapQuote>;
+  executeSwap(params: SwapParams): Promise<string>;
+  getSupportedTokens(): Promise<TokenInfo[]>;
+  estimateGas(params: GasEstimateParams): Promise<string>;
 }
 
 export interface HTLCParams {
@@ -36,6 +40,60 @@ export interface HTLCStatus {
   expiresAt: number;
 }
 
+export interface SwapQuoteParams {
+  fromToken: string;
+  toToken: string;
+  fromAmount: string;
+  userAddress: string;
+}
+
+export interface SwapQuote {
+  fromToken: string;
+  toToken: string;
+  fromAmount: string;
+  toAmount: string;
+  price: string;
+  gasEstimate: string;
+  protocols: string[];
+  route: SwapRoute[];
+  validUntil: number;
+}
+
+export interface SwapRoute {
+  protocol: string;
+  fromToken: string;
+  toToken: string;
+  amount: string;
+  fee: string;
+  poolId?: string;
+}
+
+export interface SwapParams {
+  fromToken: string;
+  toToken: string;
+  fromAmount: string;
+  toAmount: string;
+  userAddress: string;
+  deadline?: number;
+  slippageTolerance?: number;
+}
+
+export interface GasEstimateParams {
+  fromToken: string;
+  toToken: string;
+  fromAmount: string;
+  userAddress: string;
+}
+
+export interface TokenInfo {
+  address: string;
+  symbol: string;
+  name: string;
+  decimals: number;
+  logoURI?: string;
+  chainId?: number;
+}
+
 export interface CrossChainSwapRequest {
   fromChain: string;
   toChain: string;
@@ -45,6 +103,8 @@ export interface CrossChainSwapRequest {
   userAddress: string;
   recipientAddress?: string;
   timelock?: number;
+  slippageTolerance?: number;
+  strategy?: 'atomic' | 'optimistic' | 'hybrid';
 }
 
 export interface CrossChainSwapStatus {
@@ -71,46 +131,107 @@ export interface CrossChainSwapStatus {
     refundTx?: string;
   };
   error?: string;
+  strategy: string;
+  slippageTolerance: number;
 }
 
-// Solana Service Implementation
+// Advanced DeFi Strategy Interface
+export interface DeFiStrategy {
+  name: string;
+  description: string;
+  riskLevel: 'low' | 'medium' | 'high';
+  expectedAPY: number;
+  minLockPeriod: number;
+  maxLockPeriod: number;
+  supportedChains: string[];
+  supportedTokens: string[];
+  execute(params: StrategyParams): Promise<StrategyResult>;
+}
+
+export interface StrategyParams {
+  userAddress: string;
+  amount: string;
+  token: string;
+  chain: string;
+  duration: number;
+  riskTolerance: 'low' | 'medium' | 'high';
+}
+
+export interface StrategyResult {
+  success: boolean;
+  txHash?: string;
+  strategyName: string;
+  expectedReturn: string;
+  riskLevel: string;
+  lockPeriod: number;
+  error?: string;
+}
+
+// Enhanced Solana Service Implementation
 export class SolanaService implements L1ChainService {
   private connection: any;
   private wallet: any;
   private programId: string;
+  private rpcUrl: string;
 
-  constructor(config: { rpcUrl: string; programId: string }) {
+  constructor(config: { rpcUrl: string; programId: string; privateKey?: string }) {
+    this.rpcUrl = config.rpcUrl;
     this.programId = config.programId;
   }
 
   async initialize(): Promise<void> {
-    // Initialize Solana connection and wallet
-    console.log('Initializing Solana service...');
+    try {
+      // Initialize Solana connection and wallet
+      console.log('Initializing Solana service...');
+      // In production, implement actual Solana connection
+    } catch (error) {
+      console.error('Error initializing Solana service:', error);
+      throw error;
+    }
   }
 
   async createHTLC(params: HTLCParams): Promise<string> {
-    // Create HTLC on Solana using Anchor program
-    const txHash = `sol_htlc_${Date.now()}`;
-    console.log('Created Solana HTLC:', txHash);
-    return txHash;
+    try {
+      // Create HTLC on Solana using Anchor program
+      const txHash = `sol_htlc_${Date.now()}_${crypto.randomBytes(8).toString('hex')}`;
+      console.log('Created Solana HTLC:', txHash);
+      return txHash;
+    } catch (error) {
+      console.error('Error creating Solana HTLC:', error);
+      throw error;
+    }
   }
 
   async redeemHTLC(htlcId: string, preimage: string): Promise<string> {
-    // Redeem HTLC on Solana
-    const txHash = `sol_redeem_${Date.now()}`;
-    console.log('Redeemed Solana HTLC:', txHash);
-    return txHash;
+    try {
+      const txHash = `sol_redeem_${Date.now()}_${crypto.randomBytes(8).toString('hex')}`;
+      console.log('Redeemed Solana HTLC:', txHash);
+      return txHash;
+    } catch (error) {
+      console.error('Error redeeming Solana HTLC:', error);
+      throw error;
+    }
   }
 
   async refundHTLC(htlcId: string): Promise<string> {
-    // Refund HTLC on Solana
-    const txHash = `sol_refund_${Date.now()}`;
-    console.log('Refunded Solana HTLC:', txHash);
-    return txHash;
+    try {
+      const txHash = `sol_refund_${Date.now()}_${crypto.randomBytes(8).toString('hex')}`;
+      console.log('Refunded Solana HTLC:', txHash);
+      return txHash;
+    } catch (error) {
+      console.error('Error refunding Solana HTLC:', error);
+      throw error;
+    }
   }
 
   async getBalance(address: string): Promise<string> {
-    return '1000000000'; // Mock balance
+    try {
+      // In production, implement actual balance checking
+      return '1000000000';
+    } catch (error) {
+      console.error('Error getting Solana balance:', error);
+      return '0';
+    }
   }
 
   async getHTLCStatus(htlcId: string): Promise<HTLCStatus> {
@@ -125,43 +246,109 @@ export class SolanaService implements L1ChainService {
       createdAt: Date.now(),
       expiresAt: Date.now() + 3600000
     };
+  }
+
+  async getSwapQuote(params: SwapQuoteParams): Promise<SwapQuote> {
+    // Implement Solana DEX integration (e.g., Raydium, Orca)
+    return {
+      fromToken: params.fromToken,
+      toToken: params.toToken,
+      fromAmount: params.fromAmount,
+      toAmount: params.fromAmount, // 1:1 for demo
+      price: '1.0',
+      gasEstimate: '5000',
+      protocols: ['raydium', 'orca'],
+      route: [{
+        protocol: 'raydium',
+        fromToken: params.fromToken,
+        toToken: params.toToken,
+        amount: params.fromAmount,
+        fee: '0.3',
+        poolId: 'mock_pool_id'
+      }],
+      validUntil: Date.now() + 300000 // 5 minutes
+    };
+  }
+
+  async executeSwap(params: SwapParams): Promise<string> {
+    const txHash = `sol_swap_${Date.now()}_${crypto.randomBytes(8).toString('hex')}`;
+    console.log('Executed Solana swap:', txHash);
+    return txHash;
+  }
+
+  async getSupportedTokens(): Promise<TokenInfo[]> {
+    return [
+      { address: 'So11111111111111111111111111111111111111112', symbol: 'SOL', name: 'Solana', decimals: 9 },
+      { address: 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v', symbol: 'USDC', name: 'USD Coin', decimals: 6 },
+      { address: 'Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB', symbol: 'USDT', name: 'Tether USD', decimals: 6 }
+    ];
+  }
+
+  async estimateGas(params: GasEstimateParams): Promise<string> {
+    return '5000';
   }
 }
 
-// Stellar Service Implementation
+// Enhanced Stellar Service Implementation
 export class StellarService implements L1ChainService {
   private server: any;
   private account: any;
+  private network: string;
 
-  constructor(config: { rpcUrl: string; network: string }) {
-    // Initialize Stellar server
+  constructor(config: { rpcUrl: string; network: string; privateKey?: string }) {
+    this.network = config.network;
   }
 
   async initialize(): Promise<void> {
-    console.log('Initializing Stellar service...');
+    try {
+      console.log('Initializing Stellar service...');
+      // In production, implement actual Stellar connection
+    } catch (error) {
+      console.error('Error initializing Stellar service:', error);
+      throw error;
+    }
   }
 
   async createHTLC(params: HTLCParams): Promise<string> {
-    // Create HTLC on Stellar using Stellar SDK
-    const txHash = `stellar_htlc_${Date.now()}`;
-    console.log('Created Stellar HTLC:', txHash);
-    return txHash;
+    try {
+      const txHash = `stellar_htlc_${Date.now()}_${crypto.randomBytes(8).toString('hex')}`;
+      console.log('Created Stellar HTLC:', txHash);
+      return txHash;
+    } catch (error) {
+      console.error('Error creating Stellar HTLC:', error);
+      throw error;
+    }
   }
 
   async redeemHTLC(htlcId: string, preimage: string): Promise<string> {
-    const txHash = `stellar_redeem_${Date.now()}`;
-    console.log('Redeemed Stellar HTLC:', txHash);
-    return txHash;
+    try {
+      const txHash = `stellar_redeem_${Date.now()}_${crypto.randomBytes(8).toString('hex')}`;
+      console.log('Redeemed Stellar HTLC:', txHash);
+      return txHash;
+    } catch (error) {
+      console.error('Error redeeming Stellar HTLC:', error);
+      throw error;
+    }
   }
 
   async refundHTLC(htlcId: string): Promise<string> {
-    const txHash = `stellar_refund_${Date.now()}`;
-    console.log('Refunded Stellar HTLC:', txHash);
-    return txHash;
+    try {
+      const txHash = `stellar_refund_${Date.now()}_${crypto.randomBytes(8).toString('hex')}`;
+      console.log('Refunded Stellar HTLC:', txHash);
+      return txHash;
+    } catch (error) {
+      console.error('Error refunding Stellar HTLC:', error);
+      throw error;
+    }
   }
 
   async getBalance(address: string): Promise<string> {
-    return '1000000000';
+    try {
+      return '1000000000';
+    } catch (error) {
+      console.error('Error getting Stellar balance:', error);
+      return '0';
+    }
   }
 
   async getHTLCStatus(htlcId: string): Promise<HTLCStatus> {
@@ -176,6 +363,45 @@ export class StellarService implements L1ChainService {
       createdAt: Date.now(),
       expiresAt: Date.now() + 3600000
     };
+  }
+
+  async getSwapQuote(params: SwapQuoteParams): Promise<SwapQuote> {
+    return {
+      fromToken: params.fromToken,
+      toToken: params.toToken,
+      fromAmount: params.fromAmount,
+      toAmount: params.fromAmount,
+      price: '1.0',
+      gasEstimate: '100',
+      protocols: ['stellar-dex'],
+      route: [{
+        protocol: 'stellar-dex',
+        fromToken: params.fromToken,
+        toToken: params.toToken,
+        amount: params.fromAmount,
+        fee: '0.1',
+        poolId: 'mock_pool_id'
+      }],
+      validUntil: Date.now() + 300000
+    };
+  }
+
+  async executeSwap(params: SwapParams): Promise<string> {
+    const txHash = `stellar_swap_${Date.now()}_${crypto.randomBytes(8).toString('hex')}`;
+    console.log('Executed Stellar swap:', txHash);
+    return txHash;
+  }
+
+  async getSupportedTokens(): Promise<TokenInfo[]> {
+    return [
+      { address: 'native', symbol: 'XLM', name: 'Stellar Lumens', decimals: 7 },
+      { address: 'USDC-GA5ZSEJYB37JRC5AVCIA5MOP4RHTM335X2KGX3IHOJAPP5RE34KXEZZN', symbol: 'USDC', name: 'USD Coin', decimals: 6 },
+      { address: 'USDT-GA5ZSEJYB37JRC5AVCIA5MOP4RHTM335X2KGX3IHOJAPP5RE34KXEZZN', symbol: 'USDT', name: 'Tether USD', decimals: 6 }
+    ];
+  }
+
+  async estimateGas(params: GasEstimateParams): Promise<string> {
+    return '100';
   }
 }
 
@@ -641,21 +867,147 @@ export class PolkadotService implements L1ChainService {
   }
 }
 
-// Main Fusion+ L1 Extension Coordinator
+// Advanced DeFi Strategies
+export class YieldFarmingStrategy implements DeFiStrategy {
+  name = 'Yield Farming';
+  description = 'Earn yield by providing liquidity to DeFi protocols';
+  riskLevel: 'low' | 'medium' | 'high' = 'medium';
+  expectedAPY = 15.5;
+  minLockPeriod = 7 * 24 * 60 * 60; // 7 days
+  maxLockPeriod = 365 * 24 * 60 * 60; // 1 year
+  supportedChains = ['ethereum', 'polygon', 'arbitrum', 'base'];
+  supportedTokens = ['USDC', 'USDT', 'DAI', 'WETH'];
+
+  async execute(params: StrategyParams): Promise<StrategyResult> {
+    try {
+      // Implement yield farming logic
+      const txHash = `yield_farm_${Date.now()}_${crypto.randomBytes(8).toString('hex')}`;
+      const expectedReturn = (parseFloat(params.amount) * (this.expectedAPY / 100) * (params.duration / 365)).toString();
+      
+      return {
+        success: true,
+        txHash,
+        strategyName: this.name,
+        expectedReturn,
+        riskLevel: this.riskLevel,
+        lockPeriod: params.duration
+      };
+    } catch (error) {
+      return {
+        success: false,
+        strategyName: this.name,
+        expectedReturn: '0',
+        riskLevel: this.riskLevel,
+        lockPeriod: params.duration,
+        error: error instanceof Error ? error.message : 'Unknown error'
+      };
+    }
+  }
+}
+
+export class LiquidityMiningStrategy implements DeFiStrategy {
+  name = 'Liquidity Mining';
+  description = 'Provide liquidity and earn protocol tokens';
+  riskLevel: 'low' | 'medium' | 'high' = 'high';
+  expectedAPY = 25.0;
+  minLockPeriod = 30 * 24 * 60 * 60; // 30 days
+  maxLockPeriod = 365 * 24 * 60 * 60; // 1 year
+  supportedChains = ['ethereum', 'polygon', 'arbitrum'];
+  supportedTokens = ['USDC', 'USDT', 'WETH', 'WBTC'];
+
+  async execute(params: StrategyParams): Promise<StrategyResult> {
+    try {
+      const txHash = `liquidity_mine_${Date.now()}_${crypto.randomBytes(8).toString('hex')}`;
+      const expectedReturn = (parseFloat(params.amount) * (this.expectedAPY / 100) * (params.duration / 365)).toString();
+      
+      return {
+        success: true,
+        txHash,
+        strategyName: this.name,
+        expectedReturn,
+        riskLevel: this.riskLevel,
+        lockPeriod: params.duration
+      };
+    } catch (error) {
+      return {
+        success: false,
+        strategyName: this.name,
+        expectedReturn: '0',
+        riskLevel: this.riskLevel,
+        lockPeriod: params.duration,
+        error: error instanceof Error ? error.message : 'Unknown error'
+      };
+    }
+  }
+}
+
+export class ArbitrageStrategy implements DeFiStrategy {
+  name = 'Cross-Chain Arbitrage';
+  description = 'Exploit price differences across chains';
+  riskLevel: 'low' | 'medium' | 'high' = 'high';
+  expectedAPY = 35.0;
+  minLockPeriod = 1 * 24 * 60 * 60; // 1 day
+  maxLockPeriod = 7 * 24 * 60 * 60; // 7 days
+  supportedChains = ['ethereum', 'polygon', 'arbitrum', 'base', 'optimism'];
+  supportedTokens = ['USDC', 'USDT', 'WETH', 'WBTC'];
+
+  async execute(params: StrategyParams): Promise<StrategyResult> {
+    try {
+      const txHash = `arbitrage_${Date.now()}_${crypto.randomBytes(8).toString('hex')}`;
+      const expectedReturn = (parseFloat(params.amount) * (this.expectedAPY / 100) * (params.duration / 365)).toString();
+      
+      return {
+        success: true,
+        txHash,
+        strategyName: this.name,
+        expectedReturn,
+        riskLevel: this.riskLevel,
+        lockPeriod: params.duration
+      };
+    } catch (error) {
+      return {
+        success: false,
+        strategyName: this.name,
+        expectedReturn: '0',
+        riskLevel: this.riskLevel,
+        lockPeriod: params.duration,
+        error: error instanceof Error ? error.message : 'Unknown error'
+      };
+    }
+  }
+}
+
+// Enhanced Main Fusion+ L1 Extension Coordinator
 export class FusionPlusL1Extension {
   private fusionService: FusionPlusService;
+  private nearService: NEARService;
+  private aptosService: AptosService;
+  private suiService: SuiService;
   private l1Services: Map<string, L1ChainService> = new Map();
   private swaps: Map<string, CrossChainSwapStatus> = new Map();
+  private strategies: Map<string, DeFiStrategy> = new Map();
+  private logger: any;
 
   constructor() {
     this.fusionService = new FusionPlusService(FUSION_PLUS_CONFIGS.sepolia);
+    this.nearService = new NEARService(NEAR_CONFIGS.testnet);
+    this.aptosService = new AptosService(APTOS_CONFIGS.testnet);
+    this.suiService = new SuiService(SUI_CONFIGS.testnet);
     this.initializeL1Services();
+    this.initializeStrategies();
+    this.logger = console; // In production, use proper logging
   }
 
   private initializeL1Services(): void {
-    // Initialize all L1 chain services
-    this.l1Services.set('solana', new SolanaService({ rpcUrl: 'https://api.mainnet-beta.solana.com', programId: 'mock_program_id' }));
-    this.l1Services.set('stellar', new StellarService({ rpcUrl: 'https://horizon.stellar.org', network: 'public' }));
+    // Initialize all L1 chain services with proper configurations
+    this.l1Services.set('solana', new SolanaService({ 
+      rpcUrl: 'https://api.mainnet-beta.solana.com', 
+      programId: 'mock_program_id' 
+    }));
+    this.l1Services.set('stellar', new StellarService({ 
+      rpcUrl: 'https://horizon.stellar.org', 
+      network: 'public' 
+    }));
     this.l1Services.set('tron', new TronService({ rpcUrl: 'https://api.trongrid.io', contractAddress: 'mock_contract' }));
     this.l1Services.set('ton', new TONService({ rpcUrl: 'https://toncenter.com/api/v2/jsonRPC', walletAddress: 'mock_wallet' }));
     this.l1Services.set('monad', new MonadService({ rpcUrl: 'https://rpc.monad.xyz', privateKey: 'mock_key', contractAddress: 'mock_contract' }));
@@ -667,10 +1019,21 @@ export class FusionPlusL1Extension {
     this.l1Services.set('polkadot', new PolkadotService({ rpcUrl: 'wss://rpc.polkadot.io', walletAddress: 'mock_wallet' }));
   }
 
+  private initializeStrategies(): void {
+    this.strategies.set('yield_farming', new YieldFarmingStrategy());
+    this.strategies.set('liquidity_mining', new LiquidityMiningStrategy());
+    this.strategies.set('arbitrage', new ArbitrageStrategy());
+  }
+
   async initiateCrossChainSwap(request: CrossChainSwapRequest): Promise<CrossChainSwapStatus> {
     const swapId = this.generateSwapId();
     const { secret, hashlock } = this.generateSecretAndHashlock();
-    const timelock = request.timelock || Math.floor(Date.now() / 1000) + 3600; // 1 hour default
+    const timelock = request.timelock || Math.floor(Date.now() / 1000) + 3600;
+    const strategy = request.strategy || 'atomic';
+    const slippageTolerance = request.slippageTolerance || 0.5;
+
+    // Get quote for the swap
+    const quote = await this.getCrossChainQuote(request);
 
     const swap: CrossChainSwapStatus = {
       swapId,
@@ -680,7 +1043,7 @@ export class FusionPlusL1Extension {
       fromToken: request.fromToken,
       toToken: request.toToken,
       fromAmount: request.fromAmount,
-      toAmount: '0', // Will be calculated
+      toAmount: quote.toAmount,
       userAddress: request.userAddress,
       recipientAddress: request.recipientAddress || request.userAddress,
       hashlock,
@@ -689,10 +1052,13 @@ export class FusionPlusL1Extension {
       createdAt: Date.now(),
       updatedAt: Date.now(),
       expiresAt: Date.now() + (timelock * 1000),
-      transactions: {}
+      transactions: {},
+      strategy,
+      slippageTolerance
     };
 
     this.swaps.set(swapId, swap);
+    this.logger.log(`Initiated cross-chain swap: ${swapId}`);
     return swap;
   }
 
@@ -703,11 +1069,14 @@ export class FusionPlusL1Extension {
     }
 
     try {
-      // Step 1: Lock funds on source chain (EVM)
+      this.logger.log(`Executing cross-chain swap: ${swapId}`);
+
+      // Step 1: Lock funds on source chain
       if (this.isEVMChain(swap.fromChain)) {
         const sourceTxHash = await this.lockFundsOnEVMChain(swap);
         swap.transactions.sourceLockTx = sourceTxHash;
         swap.status = 'source_locked';
+        this.logger.log(`Source chain locked: ${sourceTxHash}`);
       } else {
         const l1Service = this.l1Services.get(swap.fromChain);
         if (l1Service) {
@@ -720,10 +1089,11 @@ export class FusionPlusL1Extension {
           });
           swap.transactions.sourceLockTx = sourceTxHash;
           swap.status = 'source_locked';
+          this.logger.log(`Source chain locked: ${sourceTxHash}`);
         }
       }
 
-      // Step 2: Lock funds on destination chain (L1)
+      // Step 2: Lock funds on destination chain
       const l1Service = this.l1Services.get(swap.toChain);
       if (l1Service) {
         const destTxHash = await l1Service.createHTLC({
@@ -735,6 +1105,7 @@ export class FusionPlusL1Extension {
         });
         swap.transactions.destinationLockTx = destTxHash;
         swap.status = 'destination_locked';
+        this.logger.log(`Destination chain locked: ${destTxHash}`);
       }
 
       // Step 3: Redeem on destination chain
@@ -742,6 +1113,7 @@ export class FusionPlusL1Extension {
         const redeemTxHash = await l1Service.redeemHTLC(swapId, swap.secret);
         swap.transactions.redeemTx = redeemTxHash;
         swap.status = 'completed';
+        this.logger.log(`Swap completed: ${redeemTxHash}`);
       }
 
       swap.updatedAt = Date.now();
@@ -753,6 +1125,7 @@ export class FusionPlusL1Extension {
       swap.error = error instanceof Error ? error.message : 'Unknown error';
       swap.updatedAt = Date.now();
       this.swaps.set(swapId, swap);
+      this.logger.error(`Swap failed: ${swapId}`, error);
       throw error;
     }
   }
@@ -761,25 +1134,64 @@ export class FusionPlusL1Extension {
     toAmount: string;
     price: string;
     gasEstimate: string;
+    protocols: string[];
   }> {
-    // Get quote from Fusion+ for EVM chains
-    if (this.isEVMChain(request.fromChain) && this.isEVMChain(request.toChain)) {
-      return await this.fusionService.getCrossChainQuote({
-        fromChainId: this.getChainId(request.fromChain),
-        toChainId: this.getChainId(request.toChain),
-        fromToken: request.fromToken,
-        toToken: request.toToken,
-        fromAmount: request.fromAmount,
-        userAddress: request.userAddress
-      });
+    try {
+      // Get quote from Fusion+ for EVM chains
+      if (this.isEVMChain(request.fromChain) && this.isEVMChain(request.toChain)) {
+        const quote = await this.fusionService.getCrossChainQuote({
+          fromChainId: this.getChainId(request.fromChain),
+          toChainId: this.getChainId(request.toChain),
+          fromToken: request.fromToken,
+          toToken: request.toToken,
+          fromAmount: request.fromAmount,
+          userAddress: request.userAddress
+        });
+        return {
+          toAmount: quote.toAmount,
+          price: quote.price,
+          gasEstimate: quote.gasEstimate,
+          protocols: quote.protocols
+        };
+      }
+
+      // For L1 chains, use mock pricing (in production, integrate with DEX APIs)
+      return {
+        toAmount: request.fromAmount, // 1:1 for demo
+        price: '1.0',
+        gasEstimate: '100000',
+        protocols: ['native']
+      };
+    } catch (error) {
+      this.logger.error('Error getting cross-chain quote:', error);
+      throw error;
+    }
+  }
+
+  async executeDeFiStrategy(strategyName: string, params: StrategyParams): Promise<StrategyResult> {
+    const strategy = this.strategies.get(strategyName);
+    if (!strategy) {
+      throw new Error(`Strategy not found: ${strategyName}`);
     }
 
-    // For L1 chains, use mock pricing (in production, integrate with DEX APIs)
-    return {
-      toAmount: request.fromAmount, // 1:1 for demo
-      price: '1.0',
-      gasEstimate: '100000'
-    };
+    try {
+      this.logger.log(`Executing DeFi strategy: ${strategyName}`);
+      const result = await strategy.execute(params);
+      this.logger.log(`Strategy execution result:`, result);
+      return result;
+    } catch (error) {
+      this.logger.error(`Error executing strategy ${strategyName}:`, error);
+      throw error;
+    }
+  }
+
+  async getAvailableStrategies(): Promise<DeFiStrategy[]> {
+    return Array.from(this.strategies.values());
+  }
+
+  async getStrategyRecommendations(userAddress: string, riskTolerance: 'low' | 'medium' | 'high'): Promise<DeFiStrategy[]> {
+    const strategies = Array.from(this.strategies.values());
+    return strategies.filter(strategy => strategy.riskLevel === riskTolerance);
   }
 
   async refundSwap(swapId: string): Promise<string> {
@@ -792,22 +1204,28 @@ export class FusionPlusL1Extension {
       throw new Error('Swap cannot be refunded');
     }
 
-    // Refund on source chain
-    if (this.isEVMChain(swap.fromChain)) {
-      const refundTxHash = await this.refundOnEVMChain(swap);
-      swap.transactions.refundTx = refundTxHash;
-    } else {
-      const l1Service = this.l1Services.get(swap.fromChain);
-      if (l1Service) {
-        const refundTxHash = await l1Service.refundHTLC(swapId);
+    try {
+      // Refund on source chain
+      if (this.isEVMChain(swap.fromChain)) {
+        const refundTxHash = await this.refundOnEVMChain(swap);
         swap.transactions.refundTx = refundTxHash;
+      } else {
+        const l1Service = this.l1Services.get(swap.fromChain);
+        if (l1Service) {
+          const refundTxHash = await l1Service.refundHTLC(swapId);
+          swap.transactions.refundTx = refundTxHash;
+        }
       }
-    }
 
-    swap.status = 'refunded';
-    swap.updatedAt = Date.now();
-    this.swaps.set(swapId, swap);
-    return swap.transactions.refundTx || '';
+      swap.status = 'refunded';
+      swap.updatedAt = Date.now();
+      this.swaps.set(swapId, swap);
+      this.logger.log(`Swap refunded: ${swapId}`);
+      return swap.transactions.refundTx || '';
+    } catch (error) {
+      this.logger.error(`Error refunding swap ${swapId}:`, error);
+      throw error;
+    }
   }
 
   getSwapStatus(swapId: string): CrossChainSwapStatus | null {
@@ -818,23 +1236,39 @@ export class FusionPlusL1Extension {
     return Array.from(this.swaps.values()).filter(swap => swap.userAddress === userAddress);
   }
 
+  async getSupportedChains(): Promise<string[]> {
+    return Array.from(this.l1Services.keys());
+  }
+
+  async getSupportedTokensForChain(chain: string): Promise<TokenInfo[]> {
+    const l1Service = this.l1Services.get(chain);
+    if (l1Service) {
+      return await l1Service.getSupportedTokens();
+    }
+    return [];
+  }
+
   private async lockFundsOnEVMChain(swap: CrossChainSwapStatus): Promise<string> {
-    // Use Fusion+ to lock funds on EVM chain
-    const result = await this.fusionService.executeCrossChainSwap({
-      fromChainId: this.getChainId(swap.fromChain),
-      toChainId: this.getChainId(swap.toChain),
-      fromToken: swap.fromToken,
-      toToken: swap.toToken,
-      fromAmount: swap.fromAmount,
-      toAmount: swap.toAmount,
-      userAddress: swap.userAddress
-    });
-    return result.txHash || 'mock_tx_hash';
+    try {
+      const result = await this.fusionService.executeCrossChainSwap({
+        fromChainId: this.getChainId(swap.fromChain),
+        toChainId: this.getChainId(swap.toChain),
+        fromToken: swap.fromToken,
+        toToken: swap.toToken,
+        fromAmount: swap.fromAmount,
+        toAmount: swap.toAmount,
+        userAddress: swap.userAddress
+      });
+      return result.txHash || 'mock_tx_hash';
+    } catch (error) {
+      this.logger.error('Error locking funds on EVM chain:', error);
+      throw error;
+    }
   }
 
   private async refundOnEVMChain(swap: CrossChainSwapStatus): Promise<string> {
     // Implement refund logic for EVM chains
-    return `refund_${Date.now()}`;
+    return `refund_${Date.now()}_${crypto.randomBytes(8).toString('hex')}`;
   }
 
   private generateSwapId(): string {
@@ -862,7 +1296,7 @@ export class FusionPlusL1Extension {
       'bsc': 56,
       'avalanche': 43114,
       'fantom': 250,
-      'monad': 1337 // Mock chain ID
+      'monad': 1337
     };
     return chainIds[chain.toLowerCase()] || 1;
   }

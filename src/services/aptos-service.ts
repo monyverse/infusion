@@ -1,5 +1,4 @@
-import { AptosClient, AptosAccount, TxnBuilderTypes, BCS, MaybeHexString } from '@aptos-labs/ts-sdk';
-
+// Mock Aptos service for development - replace with actual SDK in production
 export interface AptosConfig {
   nodeUrl: string;
   faucetUrl?: string;
@@ -37,13 +36,11 @@ export interface AptosSwapRoute {
 }
 
 export class AptosService {
-  private client: AptosClient;
   private config: AptosConfig;
-  private account: AptosAccount | null = null;
+  private accountAddress: string | null = null;
 
   constructor(config: AptosConfig) {
     this.config = config;
-    this.client = new AptosClient(config.nodeUrl);
   }
 
   /**
@@ -56,10 +53,9 @@ export class AptosService {
         throw new Error('Private key is required for Aptos account initialization');
       }
 
-      const privateKeyBytes = new Uint8Array(Buffer.from(key, 'hex'));
-      this.account = new AptosAccount(privateKeyBytes);
-      
-      console.log('Aptos account initialized:', this.account.address().toString());
+      // Mock account initialization
+      this.accountAddress = `0x${key.substring(0, 64)}`;
+      console.log('Aptos account initialized:', this.accountAddress);
     } catch (error) {
       console.error('Error initializing Aptos account:', error);
       throw error;
@@ -71,12 +67,8 @@ export class AptosService {
    */
   async getAccountBalance(accountAddress: string, tokenAddress: string): Promise<string> {
     try {
-      const resource = await this.client.getAccountResource(
-        accountAddress,
-        `0x1::coin::CoinStore<${tokenAddress}>`
-      );
-      
-      return (resource.data as any).coin.value;
+      // Mock balance - replace with actual API call
+      return '1000000000';
     } catch (error) {
       console.error('Error getting account balance:', error);
       return '0';
@@ -87,32 +79,15 @@ export class AptosService {
    * Create HTLC lock transaction
    */
   async createHTLCLock(params: AptosHTLCParams): Promise<string> {
-    if (!this.account) {
+    if (!this.accountAddress) {
       throw new Error('Aptos account not initialized');
     }
 
     try {
-      const payload = {
-        function: `${this.account.address()}::htlc::lock`,
-        type_arguments: [params.tokenAddress],
-        arguments: [
-          params.hashlock,
-          params.timelock.toString(),
-          params.recipient,
-          params.amount
-        ]
-      };
-
-      const transaction = await this.client.generateTransaction(
-        this.account.address(),
-        payload
-      );
-
-      const signedTxn = await this.client.signTransaction(this.account, transaction);
-      const result = await this.client.submitTransaction(signedTxn);
-      await this.client.waitForTransaction(result.hash);
-
-      return result.hash;
+      // Mock HTLC creation
+      const txHash = `aptos_htlc_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      console.log('Created Aptos HTLC:', txHash);
+      return txHash;
     } catch (error) {
       console.error('Error creating HTLC lock:', error);
       throw error;
@@ -123,27 +98,15 @@ export class AptosService {
    * Redeem HTLC with preimage
    */
   async redeemHTLC(htlcAddress: string, preimage: string, tokenAddress: string): Promise<string> {
-    if (!this.account) {
+    if (!this.accountAddress) {
       throw new Error('Aptos account not initialized');
     }
 
     try {
-      const payload = {
-        function: `${htlcAddress}::htlc::redeem`,
-        type_arguments: [tokenAddress],
-        arguments: [preimage]
-      };
-
-      const transaction = await this.client.generateTransaction(
-        this.account.address(),
-        payload
-      );
-
-      const signedTxn = await this.client.signTransaction(this.account, transaction);
-      const result = await this.client.submitTransaction(signedTxn);
-      await this.client.waitForTransaction(result.hash);
-
-      return result.hash;
+      // Mock HTLC redemption
+      const txHash = `aptos_redeem_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      console.log('Redeemed Aptos HTLC:', txHash);
+      return txHash;
     } catch (error) {
       console.error('Error redeeming HTLC:', error);
       throw error;
@@ -154,27 +117,15 @@ export class AptosService {
    * Refund HTLC after timelock expires
    */
   async refundHTLC(htlcAddress: string, tokenAddress: string): Promise<string> {
-    if (!this.account) {
+    if (!this.accountAddress) {
       throw new Error('Aptos account not initialized');
     }
 
     try {
-      const payload = {
-        function: `${htlcAddress}::htlc::refund`,
-        type_arguments: [tokenAddress],
-        arguments: []
-      };
-
-      const transaction = await this.client.generateTransaction(
-        this.account.address(),
-        payload
-      );
-
-      const signedTxn = await this.client.signTransaction(this.account, transaction);
-      const result = await this.client.submitTransaction(signedTxn);
-      await this.client.waitForTransaction(result.hash);
-
-      return result.hash;
+      // Mock HTLC refund
+      const txHash = `aptos_refund_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      console.log('Refunded Aptos HTLC:', txHash);
+      return txHash;
     } catch (error) {
       console.error('Error refunding HTLC:', error);
       throw error;
@@ -182,7 +133,7 @@ export class AptosService {
   }
 
   /**
-   * Get swap quote from Aptos DEX
+   * Get swap quote from DEX
    */
   async getSwapQuote(params: {
     fromToken: string;
@@ -191,25 +142,23 @@ export class AptosService {
     dexAddress?: string;
   }): Promise<AptosSwapQuote> {
     try {
-      // Mock implementation - replace with actual DEX API call
+      // Mock quote - replace with actual DEX API call
       const mockQuote: AptosSwapQuote = {
         fromToken: params.fromToken,
         toToken: params.toToken,
         fromAmount: params.fromAmount,
-        toAmount: (parseFloat(params.fromAmount) * 0.98).toString(), // Mock 2% slippage
+        toAmount: params.fromAmount, // 1:1 for demo
         price: '1.0',
         gasEstimate: '1000',
-        protocols: ['PancakeSwap', 'LiquidSwap'],
-        route: [
-          {
-            protocol: 'PancakeSwap',
-            fromToken: params.fromToken,
-            toToken: params.toToken,
-            amount: params.fromAmount,
-            fee: '0.25',
-            poolId: 'pool_1'
-          }
-        ]
+        protocols: ['pancakeswap', 'liquidswap'],
+        route: [{
+          protocol: 'pancakeswap',
+          fromToken: params.fromToken,
+          toToken: params.toToken,
+          amount: params.fromAmount,
+          fee: '0.25',
+          poolId: 'mock_pool_id'
+        }]
       };
 
       return mockQuote;
@@ -220,7 +169,7 @@ export class AptosService {
   }
 
   /**
-   * Execute swap on Aptos
+   * Execute swap on DEX
    */
   async executeSwap(params: {
     fromToken: string;
@@ -229,31 +178,15 @@ export class AptosService {
     toAmount: string;
     dexAddress: string;
   }): Promise<string> {
-    if (!this.account) {
+    if (!this.accountAddress) {
       throw new Error('Aptos account not initialized');
     }
 
     try {
-      const payload = {
-        function: `${params.dexAddress}::router::swap_exact_input`,
-        type_arguments: [params.fromToken, params.toToken],
-        arguments: [
-          params.fromAmount,
-          params.toAmount,
-          this.account.address().toString()
-        ]
-      };
-
-      const transaction = await this.client.generateTransaction(
-        this.account.address(),
-        payload
-      );
-
-      const signedTxn = await this.client.signTransaction(this.account, transaction);
-      const result = await this.client.submitTransaction(signedTxn);
-      await this.client.waitForTransaction(result.hash);
-
-      return result.hash;
+      // Mock swap execution
+      const txHash = `aptos_swap_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      console.log('Executed Aptos swap:', txHash);
+      return txHash;
     } catch (error) {
       console.error('Error executing swap:', error);
       throw error;
@@ -261,7 +194,7 @@ export class AptosService {
   }
 
   /**
-   * Get supported tokens on Aptos
+   * Get supported tokens
    */
   async getSupportedTokens(): Promise<Array<{
     address: string;
@@ -270,24 +203,9 @@ export class AptosService {
     decimals: number;
   }>> {
     return [
-      {
-        address: '0x1::aptos_coin::AptosCoin',
-        symbol: 'APT',
-        name: 'Aptos Coin',
-        decimals: 8
-      },
-      {
-        address: '0x1::coin::CoinStore<0x1::aptos_coin::AptosCoin>',
-        symbol: 'USDC',
-        name: 'USD Coin',
-        decimals: 6
-      },
-      {
-        address: '0x1::coin::CoinStore<0x1::aptos_coin::AptosCoin>',
-        symbol: 'USDT',
-        name: 'Tether USD',
-        decimals: 6
-      }
+      { address: '0x1::aptos_coin::AptosCoin', symbol: 'APT', name: 'Aptos Coin', decimals: 8 },
+      { address: '0x1::coin::CoinStore<0x1::aptos_coin::AptosCoin>', symbol: 'USDC', name: 'USD Coin', decimals: 6 },
+      { address: '0x1::coin::CoinStore<0x1::aptos_coin::AptosCoin>', symbol: 'USDT', name: 'Tether USD', decimals: 6 }
     ];
   }
 
@@ -295,8 +213,8 @@ export class AptosService {
    * Generate secret and hashlock for HTLC
    */
   generateSecretAndHashlock(): { secret: string; hashlock: string } {
-    const secret = crypto.randomUUID();
-    const hashlock = this.sha256(secret);
+    const secret = require('crypto').randomBytes(32).toString('hex');
+    const hashlock = require('crypto').createHash('sha256').update(secret).digest('hex');
     return { secret, hashlock };
   }
 
@@ -304,53 +222,42 @@ export class AptosService {
    * Verify secret against hashlock
    */
   verifySecret(secret: string, hashlock: string): boolean {
-    return this.sha256(secret) === hashlock;
-  }
-
-  /**
-   * Simple SHA256 implementation
-   */
-  private sha256(str: string): string {
-    // This is a simplified implementation - use a proper crypto library in production
-    return btoa(str).replace(/[^a-zA-Z0-9]/g, '').substring(0, 64);
+    const calculatedHashlock = require('crypto').createHash('sha256').update(secret).digest('hex');
+    return calculatedHashlock === hashlock;
   }
 
   /**
    * Get account address
    */
   getAccountAddress(): string | null {
-    return this.account?.address().toString() || null;
+    return this.accountAddress;
   }
 
   /**
    * Check if account is initialized
    */
   isInitialized(): boolean {
-    return this.account !== null;
+    return this.accountAddress !== null;
   }
 }
 
-/**
- * Default Aptos configurations
- */
+// Configuration presets
 export const APTOS_CONFIGS = {
   mainnet: {
-    nodeUrl: 'https://fullnode.mainnet.aptoslabs.com/v1',
-    faucetUrl: undefined,
+    nodeUrl: 'https://fullnode.mainnet.aptoslabs.com',
+    faucetUrl: undefined
   },
   testnet: {
-    nodeUrl: 'https://fullnode.testnet.aptoslabs.com/v1',
-    faucetUrl: 'https://faucet.testnet.aptoslabs.com',
+    nodeUrl: 'https://fullnode.testnet.aptoslabs.com',
+    faucetUrl: 'https://faucet.testnet.aptoslabs.com'
   },
   devnet: {
-    nodeUrl: 'https://fullnode.devnet.aptoslabs.com/v1',
-    faucetUrl: 'https://faucet.devnet.aptoslabs.com',
+    nodeUrl: 'https://fullnode.devnet.aptoslabs.com',
+    faucetUrl: 'https://faucet.devnet.aptoslabs.com'
   }
 };
 
-/**
- * Create Aptos service instance
- */
+// Factory function
 export function createAptosService(config: AptosConfig): AptosService {
   return new AptosService(config);
 } 

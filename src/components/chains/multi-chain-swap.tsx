@@ -1,9 +1,16 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { useFusionPlus } from '@/hooks/useFusionPlus';
-import { Button } from '@/components/ui/button';
-import { ArrowRight, RefreshCw, AlertCircle, CheckCircle, Loader2, Globe, Zap } from 'lucide-react';
+import { Button } from '../ui/button';
+import { Input } from '../ui/input';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
+import { Badge } from '../ui/badge';
+import { Progress } from '../ui/progress';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
+import { Alert, AlertDescription } from '../ui/alert';
+import { createFusionPlusL1Extension, CrossChainSwapRequest, CrossChainSwapStatus, DeFiStrategy, StrategyParams } from '../../services/fusion-plus-l1-extension';
+import { ArrowRight, ArrowUpDown, TrendingUp, Shield, Zap, RefreshCw, CheckCircle, XCircle, Clock, AlertTriangle } from 'lucide-react';
 
 interface Token {
   address: string;
@@ -20,363 +27,237 @@ interface Chain {
   icon: string;
   color: string;
   rpcUrl?: string;
-  type: 'evm' | 'near' | 'aptos' | 'sui' | 'bitcoin';
+  type: 'evm' | 'near' | 'aptos' | 'sui' | 'bitcoin' | 'solana' | 'stellar' | 'tron' | 'ton' | 'monad' | 'starknet' | 'cardano' | 'xrp' | 'icp' | 'tezos' | 'polkadot';
   isL1: boolean;
 }
 
-const SUPPORTED_CHAINS: Chain[] = [
-  // EVM Chains
-  {
-    id: 'ethereum',
-    name: 'Ethereum',
-    chainId: 1,
-    icon: '🔷',
-    color: 'bg-blue-500',
-    rpcUrl: 'https://eth-mainnet.g.alchemy.com/v2/your_key',
-    type: 'evm',
-    isL1: true
-  },
-  {
-    id: 'sepolia',
-    name: 'Sepolia',
-    chainId: 11155111,
-    icon: '🔷',
-    color: 'bg-blue-400',
-    rpcUrl: 'https://sepolia.drpc.org',
-    type: 'evm',
-    isL1: false
-  },
-  {
-    id: 'arbitrum',
-    name: 'Arbitrum',
-    chainId: 42161,
-    icon: '🔵',
-    color: 'bg-blue-600',
-    rpcUrl: 'https://arb1.arbitrum.io/rpc',
-    type: 'evm',
-    isL1: false
-  },
-  {
-    id: 'polygon',
-    name: 'Polygon',
-    chainId: 137,
-    icon: '🟣',
-    color: 'bg-purple-500',
-    rpcUrl: 'https://polygon-rpc.com',
-    type: 'evm',
-    isL1: false
-  },
-  {
-    id: 'base',
-    name: 'Base',
-    chainId: 8453,
-    icon: '🔵',
-    color: 'bg-blue-500',
-    rpcUrl: 'https://mainnet.base.org',
-    type: 'evm',
-    isL1: false
-  },
-  {
-    id: 'optimism',
-    name: 'Optimism',
-    chainId: 10,
-    icon: '🔴',
-    color: 'bg-red-500',
-    rpcUrl: 'https://mainnet.optimism.io',
-    type: 'evm',
-    isL1: false
-  },
-  {
-    id: 'bsc',
-    name: 'BSC',
-    chainId: 56,
-    icon: '🟡',
-    color: 'bg-yellow-500',
-    rpcUrl: 'https://bsc-dataseed.binance.org',
-    type: 'evm',
-    isL1: false
-  },
-  {
-    id: 'avalanche',
-    name: 'Avalanche',
-    chainId: 43114,
-    icon: '🔴',
-    color: 'bg-red-600',
-    rpcUrl: 'https://api.avax.network/ext/bc/C/rpc',
-    type: 'evm',
-    isL1: false
-  },
-  {
-    id: 'fantom',
-    name: 'Fantom',
-    chainId: 250,
-    icon: '🔵',
-    color: 'bg-blue-400',
-    rpcUrl: 'https://rpc.ftm.tools',
-    type: 'evm',
-    isL1: false
-  },
-  {
-    id: 'etherlink',
-    name: 'Etherlink',
-    chainId: 128123,
-    icon: '🟢',
-    color: 'bg-green-500',
-    rpcUrl: 'https://node.ghostnet.etherlink.com',
-    type: 'evm',
-    isL1: false
-  },
-  // L1 Chains
-  {
-    id: 'near',
-    name: 'NEAR Protocol',
-    icon: '🟢',
-    color: 'bg-green-600',
-    type: 'near',
-    isL1: true
-  },
-  {
-    id: 'aptos',
-    name: 'Aptos',
-    icon: '🔵',
-    color: 'bg-blue-700',
-    type: 'aptos',
-    isL1: true
-  },
-  {
-    id: 'sui',
-    name: 'Sui',
-    icon: '🟣',
-    color: 'bg-purple-600',
-    type: 'sui',
-    isL1: true
-  },
-  {
-    id: 'bitcoin',
-    name: 'Bitcoin',
-    icon: '🟡',
-    color: 'bg-orange-500',
-    type: 'bitcoin',
-    isL1: true
-  }
-];
+interface SwapQuote {
+  toAmount: string;
+  price: string;
+  gasEstimate: string;
+  protocols: string[];
+}
 
-const COMMON_TOKENS: { [chainId: string]: Token[] } = {
-  // EVM Chains
-  '1': [ // Ethereum
-    { address: '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2', symbol: 'WETH', name: 'Wrapped Ether', decimals: 18 },
-    { address: '0xA0b86a33E6441b8c4aC0C8e8B2dD4C8F1E9f5A2B', symbol: 'USDC', name: 'USD Coin', decimals: 6 },
-    { address: '0xdAC17F958D2ee523a2206206994597C13D831ec7', symbol: 'USDT', name: 'Tether USD', decimals: 6 },
-    { address: '0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599', symbol: 'WBTC', name: 'Wrapped Bitcoin', decimals: 8 },
-  ],
-  '11155111': [ // Sepolia
-    { address: '0xfFf9976782d46CC05630D1f6eBAb18b2324d6B14', symbol: 'WETH', name: 'Wrapped Ether', decimals: 18 },
-    { address: '0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238', symbol: 'USDC', name: 'USD Coin', decimals: 6 },
-  ],
-  '137': [ // Polygon
-    { address: '0x0d500B1d8E8eF31E21C99d1Db9A6444d3ADf1270', symbol: 'WMATIC', name: 'Wrapped MATIC', decimals: 18 },
-    { address: '0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174', symbol: 'USDC', name: 'USD Coin', decimals: 6 },
-    { address: '0xc2132D05D31c914a87C6611C10748AEb04B58e8F', symbol: 'USDT', name: 'Tether USD', decimals: 6 },
-  ],
-  '8453': [ // Base
-    { address: '0x4200000000000000000000000000000000000006', symbol: 'WETH', name: 'Wrapped Ether', decimals: 18 },
-    { address: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913', symbol: 'USDC', name: 'USD Coin', decimals: 6 },
-  ],
-  '42161': [ // Arbitrum
-    { address: '0x82aF49447D8a07e3bd95BD0d56f35241523fBab1', symbol: 'WETH', name: 'Wrapped Ether', decimals: 18 },
-    { address: '0xFF970A61A04b1cA14834A43f5dE4533eBDDB5CC8', symbol: 'USDC', name: 'USD Coin', decimals: 6 },
-  ],
-  '10': [ // Optimism
-    { address: '0x4200000000000000000000000000000000000006', symbol: 'WETH', name: 'Wrapped Ether', decimals: 18 },
-    { address: '0x7F5c764cBc14f9669B88837ca1490cCa17c31607', symbol: 'USDC', name: 'USD Coin', decimals: 6 },
-  ],
-  '56': [ // BSC
-    { address: '0xbb4CdB9CBd36B01bD1cBaEF60aF814a3f6F0E675', symbol: 'WBNB', name: 'Wrapped BNB', decimals: 18 },
-    { address: '0x8AC76a51cc950d9822D68b83fE1Ad97B32Cd580d', symbol: 'USDC', name: 'USD Coin', decimals: 18 },
-  ],
-  '43114': [ // Avalanche
-    { address: '0xB31f66AA3C1e785363F0875A1B74E27b85FD66c7', symbol: 'WAVAX', name: 'Wrapped AVAX', decimals: 18 },
-    { address: '0xB97EF9Ef8734C71904D8002F8b6Bc66Dd9c48a6E', symbol: 'USDC', name: 'USD Coin', decimals: 6 },
-  ],
-  '250': [ // Fantom
-    { address: '0x21be370D5312f44cB42ce377BC9b8a0cEF1A4C83', symbol: 'WFTM', name: 'Wrapped FTM', decimals: 18 },
-    { address: '0x04068DA6C83AFCFA0e13ba15A6696662335D5B75', symbol: 'USDC', name: 'USD Coin', decimals: 6 },
-  ],
-  '128123': [ // Etherlink
-    { address: '0x0000000000000000000000000000000000000000', symbol: 'XTZ', name: 'Tezos', decimals: 18 },
-    { address: '0x0000000000000000000000000000000000000001', symbol: 'USDC', name: 'USD Coin', decimals: 6 },
-  ],
-  // L1 Chains
-  'near': [
-    { address: 'near', symbol: 'NEAR', name: 'NEAR Protocol', decimals: 24 },
-    { address: 'usdc.fakes.testnet', symbol: 'USDC', name: 'USD Coin', decimals: 6 },
-    { address: 'usdt.fakes.testnet', symbol: 'USDT', name: 'Tether USD', decimals: 6 },
-  ],
-  'aptos': [
-    { address: '0x1::aptos_coin::AptosCoin', symbol: 'APT', name: 'Aptos Coin', decimals: 8 },
-    { address: '0x1::coin::CoinStore<0x1::aptos_coin::AptosCoin>', symbol: 'USDC', name: 'USD Coin', decimals: 6 },
-    { address: '0x1::coin::CoinStore<0x1::aptos_coin::AptosCoin>', symbol: 'USDT', name: 'Tether USD', decimals: 6 },
-  ],
-  'sui': [
-    { address: '0x2::sui::SUI', symbol: 'SUI', name: 'Sui', decimals: 9 },
-    { address: '0x5d4b302506645c37ff133b98c4b50a5ae14841659738d6d733d59d0d217a93bf::coin::USDC', symbol: 'USDC', name: 'USD Coin', decimals: 6 },
-    { address: '0x5d4b302506645c37ff133b98c4b50a5ae14841659738d6d733d59d0d217a93bf::coin::USDT', symbol: 'USDT', name: 'Tether USD', decimals: 6 },
-  ],
-  'bitcoin': [
-    { address: 'btc', symbol: 'BTC', name: 'Bitcoin', decimals: 8 },
-    { address: 'wbtc', symbol: 'WBTC', name: 'Wrapped Bitcoin', decimals: 8 },
-  ]
+interface StrategyCardProps {
+  strategy: DeFiStrategy;
+  onExecute: (strategy: DeFiStrategy) => void;
+  isExecuting: boolean;
+}
+
+const StrategyCard: React.FC<StrategyCardProps> = ({ strategy, onExecute, isExecuting }) => {
+  const getRiskColor = (risk: string) => {
+    switch (risk) {
+      case 'low': return 'bg-green-100 text-green-800';
+      case 'medium': return 'bg-yellow-100 text-yellow-800';
+      case 'high': return 'bg-red-100 text-red-800';
+      default: return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  return (
+    <Card className="w-full">
+      <CardHeader>
+        <div className="flex items-center justify-between">
+          <CardTitle className="text-lg">{strategy.name}</CardTitle>
+          <Badge className={getRiskColor(strategy.riskLevel)}>
+            {strategy.riskLevel.toUpperCase()}
+          </Badge>
+        </div>
+        <CardDescription>{strategy.description}</CardDescription>
+      </CardHeader>
+      <CardContent>
+        <div className="space-y-3">
+          <div className="flex justify-between">
+            <span className="text-sm text-gray-600">Expected APY:</span>
+            <span className="font-semibold text-green-600">{strategy.expectedAPY}%</span>
+          </div>
+          <div className="flex justify-between">
+            <span className="text-sm text-gray-600">Lock Period:</span>
+            <span className="text-sm">{Math.floor(strategy.minLockPeriod / (24 * 60 * 60))} - {Math.floor(strategy.maxLockPeriod / (24 * 60 * 60))} days</span>
+          </div>
+          <div className="flex justify-between">
+            <span className="text-sm text-gray-600">Supported Chains:</span>
+            <span className="text-sm">{strategy.supportedChains.length}</span>
+          </div>
+          <Button 
+            onClick={() => onExecute(strategy)} 
+            disabled={isExecuting}
+            className="w-full"
+          >
+            {isExecuting ? (
+              <>
+                <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
+                Executing...
+              </>
+            ) : (
+              <>
+                <Zap className="w-4 h-4 mr-2" />
+                Execute Strategy
+              </>
+            )}
+          </Button>
+        </div>
+      </CardContent>
+    </Card>
+  );
 };
 
 export const MultiChainSwap: React.FC = () => {
-  const [fromChain, setFromChain] = useState<Chain>(SUPPORTED_CHAINS[0]);
-  const [toChain, setToChain] = useState<Chain>(SUPPORTED_CHAINS[1]);
-  const [fromToken, setFromToken] = useState<Token>(COMMON_TOKENS['1']?.[0] || { address: '', symbol: '', name: '', decimals: 18 });
-  const [toToken, setToToken] = useState<Token>(COMMON_TOKENS['137']?.[1] || { address: '', symbol: '', name: '', decimals: 6 });
-  const [fromAmount, setFromAmount] = useState<string>('');
+  const [fusionExtension] = useState(() => createFusionPlusL1Extension());
+  const [fromChain, setFromChain] = useState<string>('ethereum');
+  const [toChain, setToChain] = useState<string>('polygon');
+  const [fromToken, setFromToken] = useState<string>('USDC');
+  const [toToken, setToToken] = useState<string>('USDT');
+  const [fromAmount, setFromAmount] = useState<string>('100');
   const [userAddress, setUserAddress] = useState<string>('');
-  const [isCrossChain, setIsCrossChain] = useState<boolean>(false);
-  const [isL1Swap, setIsL1Swap] = useState<boolean>(false);
-  const [swapHistory, setSwapHistory] = useState<any[]>([]);
-  const [swapStatus, setSwapStatus] = useState<any>(null);
+  const [quote, setQuote] = useState<SwapQuote | null>(null);
+  const [swapStatus, setSwapStatus] = useState<CrossChainSwapStatus | null>(null);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [isExecuting, setIsExecuting] = useState<boolean>(false);
+  const [strategies, setStrategies] = useState<DeFiStrategy[]>([]);
+  const [userSwaps, setUserSwaps] = useState<CrossChainSwapStatus[]>([]);
+  const [slippageTolerance, setSlippageTolerance] = useState<number>(0.5);
+  const [strategy, setStrategy] = useState<'atomic' | 'optimistic' | 'hybrid'>('atomic');
+  const [activeTab, setActiveTab] = useState<string>('swap');
 
-  // Initialize Fusion+ service
-  const fusionPlus = useFusionPlus({
-    chainId: fromChain.chainId ?? 1,
-    apiKey: process.env.NEXT_PUBLIC_INCH_API_KEY || '',
-    privateKey: process.env.NEXT_PUBLIC_PRIVATE_KEY || '',
-    rpcUrl: fromChain.rpcUrl || ''
-  });
+  const chains: Chain[] = [
+    { id: 'ethereum', name: 'Ethereum', chainId: 1, icon: '🔷', color: '#627EEA', type: 'evm', isL1: true },
+    { id: 'polygon', name: 'Polygon', chainId: 137, icon: '🟣', color: '#8247E5', type: 'evm', isL1: false },
+    { id: 'arbitrum', name: 'Arbitrum', chainId: 42161, icon: '🔵', color: '#28A0F0', type: 'evm', isL1: false },
+    { id: 'base', name: 'Base', chainId: 8453, icon: '🔵', color: '#0052FF', type: 'evm', isL1: false },
+    { id: 'optimism', name: 'Optimism', chainId: 10, icon: '🔴', color: '#FF0420', type: 'evm', isL1: false },
+    { id: 'bsc', name: 'BSC', chainId: 56, icon: '🟡', color: '#F3BA2F', type: 'evm', isL1: false },
+    { id: 'avalanche', name: 'Avalanche', chainId: 43114, icon: '🔴', color: '#E84142', type: 'evm', isL1: false },
+    { id: 'fantom', name: 'Fantom', chainId: 250, icon: '🔵', color: '#1969FF', type: 'evm', isL1: false },
+    { id: 'near', name: 'NEAR', icon: '🟢', color: '#000000', type: 'near', isL1: true },
+    { id: 'aptos', name: 'Aptos', icon: '🟣', color: '#3D7AFF', type: 'aptos', isL1: true },
+    { id: 'sui', name: 'Sui', icon: '🟢', color: '#6FBCF0', type: 'sui', isL1: true },
+    { id: 'solana', name: 'Solana', icon: '🟣', color: '#9945FF', type: 'solana', isL1: true },
+    { id: 'stellar', name: 'Stellar', icon: '🟡', color: '#7D00FF', type: 'stellar', isL1: true },
+    { id: 'tron', name: 'TRON', icon: '🔴', color: '#FF0000', type: 'tron', isL1: true },
+    { id: 'ton', name: 'TON', icon: '🔵', color: '#0088CC', type: 'ton', isL1: true },
+    { id: 'monad', name: 'Monad', icon: '🟢', color: '#00FF00', type: 'monad', isL1: true },
+    { id: 'starknet', name: 'Starknet', icon: '🟠', color: '#FF6B35', type: 'starknet', isL1: false },
+    { id: 'cardano', name: 'Cardano', icon: '🔵', color: '#0033AD', type: 'cardano', isL1: true },
+    { id: 'xrp', name: 'XRP Ledger', icon: '🟢', color: '#23292F', type: 'xrp', isL1: true },
+    { id: 'icp', name: 'Internet Computer', icon: '🟢', color: '#29ABE2', type: 'icp', isL1: true },
+    { id: 'tezos', name: 'Tezos', icon: '🔵', color: '#2C7DF7', type: 'tezos', isL1: true },
+    { id: 'polkadot', name: 'Polkadot', icon: '🟣', color: '#E6007A', type: 'polkadot', isL1: true }
+  ];
 
-  // Update Fusion+ service when chain changes
+  const tokens: Token[] = [
+    { address: '0xA0b86a33E6441b8c4C8C8C8C8C8C8C8C8C8C8C8', symbol: 'USDC', name: 'USD Coin', decimals: 6 },
+    { address: '0xdAC17F958D2ee523a2206206994597C13D831ec7', symbol: 'USDT', name: 'Tether USD', decimals: 6 },
+    { address: '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2', symbol: 'WETH', name: 'Wrapped Ether', decimals: 18 },
+    { address: '0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599', symbol: 'WBTC', name: 'Wrapped Bitcoin', decimals: 8 },
+    { address: '0x6B175474E89094C44Da98b954EedeAC495271d0F', symbol: 'DAI', name: 'Dai Stablecoin', decimals: 18 },
+    { address: '0x514910771AF9Ca656af840dff83E8264EcF986CA', symbol: 'LINK', name: 'Chainlink', decimals: 18 },
+    { address: '0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984', symbol: 'UNI', name: 'Uniswap', decimals: 18 },
+    { address: '0x7Fc66500c84A76Ad7e9c93437bFc5Ac33E2DDaE9', symbol: 'AAVE', name: 'Aave', decimals: 18 }
+  ];
+
   useEffect(() => {
-    if (fusionPlus.service && fromChain.type === 'evm') {
-      fusionPlus.service = null; // Force re-initialization
+    loadStrategies();
+    loadUserSwaps();
+  }, []);
+
+  const loadStrategies = async () => {
+    try {
+      const availableStrategies = await fusionExtension.getAvailableStrategies();
+      setStrategies(availableStrategies);
+    } catch (error) {
+      console.error('Error loading strategies:', error);
     }
-  }, [fromChain.chainId]);
+  };
 
-  // Check if this is a cross-chain swap
-  useEffect(() => {
-    setIsCrossChain(fromChain.id !== toChain.id);
-    setIsL1Swap(fromChain.isL1 || toChain.isL1);
-  }, [fromChain.id, toChain.id, fromChain.isL1, toChain.isL1]);
+  const loadUserSwaps = async () => {
+    if (userAddress) {
+      try {
+        const swaps = fusionExtension.getUserSwaps(userAddress);
+        setUserSwaps(swaps);
+      } catch (error) {
+        console.error('Error loading user swaps:', error);
+      }
+    }
+  };
 
   const handleGetQuote = async () => {
-    if (!fromAmount || !userAddress) {
-      alert('Please enter amount and user address');
-      return;
-    }
+    if (!fromAmount || !userAddress) return;
 
+    setIsLoading(true);
     try {
-      if (isCrossChain) {
-        if (fromChain.type === 'evm' && toChain.type === 'evm') {
-          await fusionPlus.getCrossChainQuote({
-            fromChainId: fromChain.chainId ?? 1,
-            toChainId: toChain.chainId ?? 1,
-            fromToken: fromToken.address,
-            toToken: toToken.address,
-            fromAmount: fromAmount,
-            toAmount: '0', // Will be calculated by the API
-            userAddress: userAddress
-          });
-        } else {
-          // L1 cross-chain swap - use coordinator
-          const response = await fetch('/api/cross-chain/quote', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              fromChain: fromChain.id,
-              toChain: toChain.id,
-              fromToken: fromToken.address,
-              toToken: toToken.address,
-              fromAmount: fromAmount,
-              userAddress: userAddress
-            })
-          });
-          
-          if (!response.ok) {
-            throw new Error('Failed to get cross-chain quote');
-          }
-          
-          const quote = await response.json();
-          setSwapStatus(quote);
-        }
-      } else {
-        await fusionPlus.getQuote({
-          fromToken: fromToken.address,
-          toToken: toToken.address,
-          fromAmount: fromAmount
-        });
-      }
+      const request: CrossChainSwapRequest = {
+        fromChain,
+        toChain,
+        fromToken,
+        toToken,
+        fromAmount,
+        userAddress,
+        slippageTolerance,
+        strategy
+      };
+
+      const quoteResult = await fusionExtension.getCrossChainQuote(request);
+      setQuote(quoteResult);
     } catch (error) {
       console.error('Error getting quote:', error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const handleExecuteSwap = async () => {
-    if (!fusionPlus.quote && !fusionPlus.crossChainQuote && !swapStatus) {
-      alert('Please get a quote first');
-      return;
-    }
+    if (!quote || !userAddress) return;
 
+    setIsExecuting(true);
     try {
-      if (isCrossChain) {
-        if (fromChain.type === 'evm' && toChain.type === 'evm') {
-          await fusionPlus.executeCrossChainSwap({
-            fromChainId: fromChain.chainId ?? 1,
-            toChainId: toChain.chainId ?? 1,
-            fromToken: fromToken.address,
-            toToken: toToken.address,
-            fromAmount: fromAmount,
-            toAmount: fusionPlus.crossChainQuote?.toAmount || '0',
-            userAddress: userAddress
-          });
-        } else {
-          // L1 cross-chain swap - use coordinator
-          const response = await fetch('/api/cross-chain/execute', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              swapId: swapStatus.swapId,
-              userAddress: userAddress
-            })
-          });
-          
-          if (!response.ok) {
-            throw new Error('Failed to execute cross-chain swap');
-          }
-          
-          const result = await response.json();
-          setSwapStatus(result);
-        }
-      } else {
-        await fusionPlus.executeSwap({
-          fromToken: fromToken.address,
-          toToken: toToken.address,
-          fromAmount: fromAmount,
-          toAmount: fusionPlus.quote?.toAmount || '0',
-          userAddress: userAddress
-        });
-      }
-
-      // Add to swap history
-      const swapRecord = {
-        id: Date.now(),
-        fromChain: fromChain.name,
-        toChain: toChain.name,
-        fromToken: fromToken.symbol,
-        toToken: toToken.symbol,
+      const request: CrossChainSwapRequest = {
+        fromChain,
+        toChain,
+        fromToken,
+        toToken,
         fromAmount,
-        toAmount: isCrossChain ? 
-          (fusionPlus.crossChainQuote?.toAmount || swapStatus?.toAmount) : 
-          fusionPlus.quote?.toAmount,
-        timestamp: new Date().toISOString(),
-        status: 'pending',
-        type: isL1Swap ? 'L1 Cross-Chain' : 'Cross-Chain'
+        userAddress,
+        slippageTolerance,
+        strategy
       };
-      setSwapHistory(prev => [swapRecord, ...prev]);
+
+      const swap = await fusionExtension.initiateCrossChainSwap(request);
+      setSwapStatus(swap);
+
+      // Execute the swap
+      const executedSwap = await fusionExtension.executeCrossChainSwap(swap.swapId);
+      setSwapStatus(executedSwap);
+      
+      // Reload user swaps
+      await loadUserSwaps();
     } catch (error) {
       console.error('Error executing swap:', error);
+    } finally {
+      setIsExecuting(false);
+    }
+  };
+
+  const handleExecuteStrategy = async (strategy: DeFiStrategy) => {
+    if (!userAddress || !fromAmount) return;
+
+    setIsExecuting(true);
+    try {
+      const params: StrategyParams = {
+        userAddress,
+        amount: fromAmount,
+        token: fromToken,
+        chain: fromChain,
+        duration: 30 * 24 * 60 * 60, // 30 days
+        riskTolerance: 'medium'
+      };
+
+      const result = await fusionExtension.executeDeFiStrategy(strategy.name.toLowerCase().replace(' ', '_'), params);
+      console.log('Strategy execution result:', result);
+    } catch (error) {
+      console.error('Error executing strategy:', error);
+    } finally {
+      setIsExecuting(false);
     }
   };
 
@@ -384,10 +265,6 @@ export const MultiChainSwap: React.FC = () => {
     const tempChain = fromChain;
     setFromChain(toChain);
     setToChain(tempChain);
-    
-    const tempToken = fromToken;
-    setFromToken(toToken);
-    setToToken(tempToken);
   };
 
   const handleSwitchTokens = () => {
@@ -397,349 +274,406 @@ export const MultiChainSwap: React.FC = () => {
   };
 
   const formatAmount = (amount: string, decimals: number) => {
-    return (parseFloat(amount) / Math.pow(10, decimals)).toFixed(6);
+    return parseFloat(amount) / Math.pow(10, decimals);
   };
 
   const getChainTokens = (chain: Chain): Token[] => {
-    const chainKey = chain.type === 'evm' ? (chain.chainId?.toString() ?? '') : chain.id;
-    return COMMON_TOKENS[chainKey] || [];
+    // In production, fetch tokens from the chain's API
+    return tokens;
+  };
+
+  const getStatusIcon = (status: string) => {
+    switch (status) {
+      case 'completed':
+        return <CheckCircle className="w-4 h-4 text-green-500" />;
+      case 'failed':
+        return <XCircle className="w-4 h-4 text-red-500" />;
+      case 'expired':
+        return <Clock className="w-4 h-4 text-yellow-500" />;
+      default:
+        return <RefreshCw className="w-4 h-4 text-blue-500 animate-spin" />;
+    }
+  };
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'completed':
+        return 'text-green-600';
+      case 'failed':
+        return 'text-red-600';
+      case 'expired':
+        return 'text-yellow-600';
+      default:
+        return 'text-blue-600';
+    }
   };
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6">
-      {/* Header */}
+    <div className="w-full max-w-6xl mx-auto p-6 space-y-6">
       <div className="text-center">
-        <h2 className="text-3xl font-bold mb-2">Multi-Chain Swap</h2>
-        <p className="text-gray-300">
-          Swap tokens across {SUPPORTED_CHAINS.length} blockchain networks with 1inch Fusion+ and HTLC technology
-        </p>
-        <div className="flex items-center justify-center space-x-4 mt-4">
-          <div className="flex items-center space-x-2 text-sm text-gray-400">
-            <Globe className="w-4 h-4" />
-            <span>{SUPPORTED_CHAINS.filter(c => c.isL1).length} L1 Chains</span>
-          </div>
-          <div className="flex items-center space-x-2 text-sm text-gray-400">
-            <Zap className="w-4 h-4" />
-            <span>HTLC Atomic Swaps</span>
-          </div>
-        </div>
+        <h1 className="text-3xl font-bold mb-2">Multi-Chain Swap & DeFi Strategies</h1>
+        <p className="text-gray-600">Swap tokens across 20+ blockchains with advanced DeFi strategies</p>
       </div>
 
-      {/* User Address Input */}
-      <div className="bg-white/10 backdrop-blur-sm rounded-xl border border-white/20 p-6">
-        <label className="block text-sm font-medium mb-2">Wallet Address</label>
-        <input
-          type="text"
-          value={userAddress}
-          onChange={(e) => setUserAddress(e.target.value)}
-          placeholder="0x742d35Cc6634C0532925a3b8D4C9db96C4b4d8b6"
-          className="w-full p-3 bg-white/5 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
-        />
-      </div>
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+        <TabsList className="grid w-full grid-cols-4">
+          <TabsTrigger value="swap">Cross-Chain Swap</TabsTrigger>
+          <TabsTrigger value="strategies">DeFi Strategies</TabsTrigger>
+          <TabsTrigger value="history">Swap History</TabsTrigger>
+          <TabsTrigger value="analytics">Analytics</TabsTrigger>
+        </TabsList>
 
-      {/* Chain Selection */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* From Chain */}
-        <div className="bg-white/10 backdrop-blur-sm rounded-xl border border-white/20 p-6">
-          <h3 className="text-lg font-semibold mb-4 flex items-center">
-            <span className="mr-2">From</span>
-            {fromChain.icon} {fromChain.name}
-            {fromChain.isL1 && <span className="ml-2 px-2 py-1 bg-orange-500/20 text-orange-400 text-xs rounded">L1</span>}
-          </h3>
-          
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium mb-2">Chain</label>
-              <select
-                value={fromChain.id}
-                onChange={(e) => {
-                  const chain = SUPPORTED_CHAINS.find(c => c.id === e.target.value);
-                  if (chain) {
-                    setFromChain(chain);
-                    const tokens = getChainTokens(chain);
-                    setFromToken(tokens[0] || { address: '', symbol: '', name: '', decimals: 18 });
-                  }
-                }}
-                className="w-full p-3 bg-white/5 border border-white/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                {SUPPORTED_CHAINS.map(chain => (
-                  <option key={chain.id} value={chain.id}>
-                    {chain.icon} {chain.name} {chain.isL1 ? '(L1)' : ''}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium mb-2">Token</label>
-              <select
-                value={fromToken.address}
-                onChange={(e) => {
-                  const tokens = getChainTokens(fromChain);
-                  const token = tokens.find((t: Token) => t.address === e.target.value);
-                  if (token) setFromToken(token);
-                }}
-                className="w-full p-3 bg-white/5 border border-white/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                {getChainTokens(fromChain).map(token => (
-                  <option key={token.address} value={token.address}>
-                    {token.symbol} - {token.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium mb-2">Amount</label>
-              <input
-                type="number"
-                value={fromAmount}
-                onChange={(e) => setFromAmount(e.target.value)}
-                placeholder="0.0"
-                className="w-full p-3 bg-white/5 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
-          </div>
-        </div>
-
-        {/* To Chain */}
-        <div className="bg-white/10 backdrop-blur-sm rounded-xl border border-white/20 p-6">
-          <h3 className="text-lg font-semibold mb-4 flex items-center">
-            <span className="mr-2">To</span>
-            {toChain.icon} {toChain.name}
-            {toChain.isL1 && <span className="ml-2 px-2 py-1 bg-orange-500/20 text-orange-400 text-xs rounded">L1</span>}
-          </h3>
-          
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium mb-2">Chain</label>
-              <select
-                value={toChain.id}
-                onChange={(e) => {
-                  const chain = SUPPORTED_CHAINS.find(c => c.id === e.target.value);
-                  if (chain) {
-                    setToChain(chain);
-                    const tokens = getChainTokens(chain);
-                    setToToken(tokens[1] || tokens[0] || { address: '', symbol: '', name: '', decimals: 6 });
-                  }
-                }}
-                className="w-full p-3 bg-white/5 border border-white/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                {SUPPORTED_CHAINS.map(chain => (
-                  <option key={chain.id} value={chain.id}>
-                    {chain.icon} {chain.name} {chain.isL1 ? '(L1)' : ''}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium mb-2">Token</label>
-              <select
-                value={toToken.address}
-                onChange={(e) => {
-                  const tokens = getChainTokens(toChain);
-                  const token = tokens.find((t: Token) => t.address === e.target.value);
-                  if (token) setToToken(token);
-                }}
-                className="w-full p-3 bg-white/5 border border-white/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                {getChainTokens(toChain).map(token => (
-                  <option key={token.address} value={token.address}>
-                    {token.symbol} - {token.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium mb-2">Estimated Amount</label>
-              <div className="w-full p-3 bg-white/5 border border-white/20 rounded-lg text-white">
-                {fusionPlus.quoteLoading || fusionPlus.crossChainLoading ? (
-                  <Loader2 className="w-5 h-5 animate-spin" />
-                ) : fusionPlus.quote || fusionPlus.crossChainQuote || swapStatus ? (
-                  `${formatAmount(
-                    isCrossChain ? 
-                      (fusionPlus.crossChainQuote?.toAmount || swapStatus?.toAmount || '0') : 
-                      fusionPlus.quote?.toAmount || '0',
-                    toToken.decimals
-                  )} ${toToken.symbol}`
-                ) : (
-                  '0.0'
-                )}
+        <TabsContent value="swap" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <ArrowUpDown className="w-5 h-5" />
+                Cross-Chain Swap
+              </CardTitle>
+              <CardDescription>
+                Swap tokens across different blockchains with atomic swaps and HTLC
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              {/* User Address Input */}
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Wallet Address</label>
+                <Input
+                  placeholder="Enter your wallet address"
+                  value={userAddress}
+                  onChange={(e) => setUserAddress(e.target.value)}
+                />
               </div>
-            </div>
-          </div>
-        </div>
-      </div>
 
-      {/* Swap Type Indicators */}
-      {isCrossChain && (
-        <div className="bg-blue-500/20 border border-blue-500/30 rounded-lg p-4">
-          <div className="flex items-center">
-            <ArrowRight className="w-5 h-5 text-blue-400 mr-2" />
-            <span className="text-blue-400 font-medium">Cross-Chain Swap</span>
-          </div>
-          <p className="text-sm text-blue-300 mt-1">
-            Swapping from {fromChain.name} to {toChain.name} using {isL1Swap ? 'HTLC atomic swaps' : '1inch Fusion+'}
-          </p>
-        </div>
-      )}
-
-      {isL1Swap && (
-        <div className="bg-orange-500/20 border border-orange-500/30 rounded-lg p-4">
-          <div className="flex items-center">
-            <Globe className="w-5 h-5 text-orange-400 mr-2" />
-            <span className="text-orange-400 font-medium">L1 Cross-Chain Swap</span>
-          </div>
-          <p className="text-sm text-orange-300 mt-1">
-            Using Hash Time-Locked Contracts (HTLC) for trustless atomic swaps between L1 chains
-          </p>
-        </div>
-      )}
-
-      {/* Action Buttons */}
-      <div className="flex flex-col sm:flex-row gap-4">
-        <Button
-          onClick={handleSwitchChains}
-          className="flex-1 bg-purple-600 hover:bg-purple-700"
-        >
-          <RefreshCw className="w-4 h-4 mr-2" />
-          Switch Chains
-        </Button>
-        
-        <Button
-          onClick={handleSwitchTokens}
-          className="flex-1 bg-purple-600 hover:bg-purple-700"
-        >
-          <RefreshCw className="w-4 h-4 mr-2" />
-          Switch Tokens
-        </Button>
-      </div>
-
-      <div className="flex flex-col sm:flex-row gap-4">
-        <Button
-          onClick={handleGetQuote}
-          disabled={fusionPlus.quoteLoading || fusionPlus.crossChainLoading || !fromAmount || !userAddress}
-          className="flex-1 bg-blue-600 hover:bg-blue-700 disabled:opacity-50"
-        >
-          {fusionPlus.quoteLoading || fusionPlus.crossChainLoading ? (
-            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-          ) : (
-            <RefreshCw className="w-4 h-4 mr-2" />
-          )}
-          Get Quote
-        </Button>
-        
-        <Button
-          onClick={handleExecuteSwap}
-          disabled={fusionPlus.swapLoading || fusionPlus.crossChainLoading || (!fusionPlus.quote && !fusionPlus.crossChainQuote && !swapStatus)}
-          className="flex-1 bg-green-600 hover:bg-green-700 disabled:opacity-50"
-        >
-          {fusionPlus.swapLoading || fusionPlus.crossChainLoading ? (
-            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-          ) : (
-            <ArrowRight className="w-4 h-4 mr-2" />
-          )}
-          Execute Swap
-        </Button>
-      </div>
-
-      {/* Error Display */}
-      {(fusionPlus.quoteError || fusionPlus.swapError || fusionPlus.crossChainError) && (
-        <div className="bg-red-500/20 border border-red-500/30 rounded-lg p-4">
-          <div className="flex items-center">
-            <AlertCircle className="w-5 h-5 text-red-400 mr-2" />
-            <span className="text-red-400 font-medium">Error</span>
-          </div>
-          <p className="text-sm text-red-300 mt-1">
-            {fusionPlus.quoteError || fusionPlus.swapError || fusionPlus.crossChainError}
-          </p>
-        </div>
-      )}
-
-      {/* Success Display */}
-      {(fusionPlus.swapResult || fusionPlus.crossChainResult || swapStatus?.status === 'completed') && (
-        <div className="bg-green-500/20 border border-green-500/30 rounded-lg p-4">
-          <div className="flex items-center">
-            <CheckCircle className="w-5 h-5 text-green-400 mr-2" />
-            <span className="text-green-400 font-medium">Success</span>
-          </div>
-          <p className="text-sm text-green-300 mt-1">
-            {isCrossChain ? 'Cross-chain swap initiated successfully!' : 'Swap executed successfully!'}
-          </p>
-          <p className="text-xs text-green-300 mt-1">
-            TX Hash: {fusionPlus.swapResult?.txHash || fusionPlus.crossChainResult?.orderHash || swapStatus?.transactions?.fromChainTx}
-          </p>
-        </div>
-      )}
-
-      {/* Quote Details */}
-      {(fusionPlus.quote || fusionPlus.crossChainQuote || swapStatus) && (
-        <div className="bg-white/10 backdrop-blur-sm rounded-xl border border-white/20 p-6">
-          <h3 className="text-lg font-semibold mb-4">Quote Details</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <span className="text-sm text-gray-400">From Amount:</span>
-              <p className="text-white">{formatAmount(fromAmount, fromToken.decimals)} {fromToken.symbol}</p>
-            </div>
-            <div>
-              <span className="text-sm text-gray-400">To Amount:</span>
-              <p className="text-white">
-                {formatAmount(
-                  isCrossChain ? 
-                    (fusionPlus.crossChainQuote?.toAmount || swapStatus?.toAmount || '0') : 
-                    fusionPlus.quote?.toAmount || '0',
-                  toToken.decimals
-                )} {toToken.symbol}
-              </p>
-            </div>
-            <div>
-              <span className="text-sm text-gray-400">Price Impact:</span>
-              <p className="text-white">{fusionPlus.quote?.price || swapStatus?.price || 'N/A'}</p>
-            </div>
-            <div>
-              <span className="text-sm text-gray-400">Estimated Gas:</span>
-              <p className="text-white">{fusionPlus.quote?.gasEstimate || fusionPlus.crossChainQuote?.estimatedGas || swapStatus?.gasEstimate || 'N/A'}</p>
-            </div>
-            {isL1Swap && (
-              <div className="md:col-span-2">
-                <span className="text-sm text-gray-400">HTLC Timelock:</span>
-                <p className="text-white">1 hour (3600 seconds)</p>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
-
-      {/* Swap History */}
-      {swapHistory.length > 0 && (
-        <div className="bg-white/10 backdrop-blur-sm rounded-xl border border-white/20 p-6">
-          <h3 className="text-lg font-semibold mb-4">Recent Swaps</h3>
-          <div className="space-y-3">
-            {swapHistory.slice(0, 5).map(swap => (
-              <div key={swap.id} className="flex items-center justify-between p-3 bg-white/5 rounded-lg">
-                <div>
-                  <p className="text-sm font-medium">
-                    {swap.fromAmount} {swap.fromToken} → {swap.toAmount} {swap.toToken}
-                  </p>
-                  <p className="text-xs text-gray-400">
-                    {swap.fromChain} → {swap.toChain} • {new Date(swap.timestamp).toLocaleString()}
-                  </p>
-                  <p className="text-xs text-blue-400">{swap.type}</p>
+              {/* Chain Selection */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">From Chain</label>
+                  <Select value={fromChain} onValueChange={setFromChain}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {chains.map((chain) => (
+                        <SelectItem key={chain.id} value={chain.id}>
+                          <div className="flex items-center gap-2">
+                            <span>{chain.icon}</span>
+                            <span>{chain.name}</span>
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
-                <div className={`px-2 py-1 rounded text-xs ${
-                  swap.status === 'pending' ? 'bg-yellow-500/20 text-yellow-400' :
-                  swap.status === 'completed' ? 'bg-green-500/20 text-green-400' :
-                  'bg-red-500/20 text-red-400'
-                }`}>
-                  {swap.status}
+
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">To Chain</label>
+                  <Select value={toChain} onValueChange={setToChain}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {chains.map((chain) => (
+                        <SelectItem key={chain.id} value={chain.id}>
+                          <div className="flex items-center gap-2">
+                            <span>{chain.icon}</span>
+                            <span>{chain.name}</span>
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
-            ))}
-          </div>
-        </div>
-      )}
+
+              {/* Token Selection */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">From Token</label>
+                  <Select value={fromToken} onValueChange={setFromToken}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {getChainTokens(chains.find(c => c.id === fromChain)!).map((token) => (
+                        <SelectItem key={token.symbol} value={token.symbol}>
+                          <div className="flex items-center gap-2">
+                            <span>{token.symbol}</span>
+                            <span className="text-gray-500">({token.name})</span>
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">To Token</label>
+                  <Select value={toToken} onValueChange={setToToken}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {getChainTokens(chains.find(c => c.id === toChain)!).map((token) => (
+                        <SelectItem key={token.symbol} value={token.symbol}>
+                          <div className="flex items-center gap-2">
+                            <span>{token.symbol}</span>
+                            <span className="text-gray-500">({token.name})</span>
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              {/* Amount Input */}
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Amount</label>
+                <Input
+                  type="number"
+                  placeholder="Enter amount"
+                  value={fromAmount}
+                  onChange={(e) => setFromAmount(e.target.value)}
+                />
+              </div>
+
+              {/* Advanced Options */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Strategy</label>
+                  <Select value={strategy} onValueChange={(value: 'atomic' | 'optimistic' | 'hybrid') => setStrategy(value)}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="atomic">Atomic</SelectItem>
+                      <SelectItem value="optimistic">Optimistic</SelectItem>
+                      <SelectItem value="hybrid">Hybrid</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Slippage Tolerance (%)</label>
+                  <Input
+                    type="number"
+                    placeholder="0.5"
+                    value={slippageTolerance}
+                    onChange={(e) => setSlippageTolerance(parseFloat(e.target.value))}
+                  />
+                </div>
+
+                <div className="flex items-end">
+                  <Button onClick={handleSwitchChains} variant="outline" className="w-full">
+                    <ArrowRight className="w-4 h-4 mr-2" />
+                    Switch Chains
+                  </Button>
+                </div>
+              </div>
+
+              {/* Quote Display */}
+              {quote && (
+                <Card className="bg-gray-50">
+                  <CardContent className="pt-6">
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                      <div>
+                        <span className="text-gray-600">To Amount:</span>
+                        <div className="font-semibold">{quote.toAmount}</div>
+                      </div>
+                      <div>
+                        <span className="text-gray-600">Price:</span>
+                        <div className="font-semibold">${quote.price}</div>
+                      </div>
+                      <div>
+                        <span className="text-gray-600">Gas Estimate:</span>
+                        <div className="font-semibold">{quote.gasEstimate}</div>
+                      </div>
+                      <div>
+                        <span className="text-gray-600">Protocols:</span>
+                        <div className="flex gap-1">
+                          {quote.protocols.map((protocol, index) => (
+                            <Badge key={index} variant="secondary" className="text-xs">
+                              {protocol}
+                            </Badge>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* Action Buttons */}
+              <div className="flex gap-4">
+                <Button 
+                  onClick={handleGetQuote} 
+                  disabled={isLoading || !fromAmount || !userAddress}
+                  className="flex-1"
+                >
+                  {isLoading ? (
+                    <>
+                      <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
+                      Getting Quote...
+                    </>
+                  ) : (
+                    <>
+                      <TrendingUp className="w-4 h-4 mr-2" />
+                      Get Quote
+                    </>
+                  )}
+                </Button>
+
+                <Button 
+                  onClick={handleExecuteSwap} 
+                  disabled={isExecuting || !quote || !userAddress}
+                  className="flex-1"
+                >
+                  {isExecuting ? (
+                    <>
+                      <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
+                      Executing Swap...
+                    </>
+                  ) : (
+                    <>
+                      <Zap className="w-4 h-4 mr-2" />
+                      Execute Swap
+                    </>
+                  )}
+                </Button>
+              </div>
+
+              {/* Swap Status */}
+              {swapStatus && (
+                <Alert>
+                  <AlertTriangle className="h-4 w-4" />
+                  <AlertDescription>
+                    <div className="flex items-center justify-between">
+                      <span>Swap Status: {swapStatus.status}</span>
+                      {getStatusIcon(swapStatus.status)}
+                    </div>
+                    {swapStatus.error && (
+                      <div className="text-red-600 mt-2">Error: {swapStatus.error}</div>
+                    )}
+                  </AlertDescription>
+                </Alert>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="strategies" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Shield className="w-5 h-5" />
+                DeFi Strategies
+              </CardTitle>
+              <CardDescription>
+                Execute advanced DeFi strategies across multiple chains
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {strategies.map((strategy) => (
+                  <StrategyCard
+                    key={strategy.name}
+                    strategy={strategy}
+                    onExecute={handleExecuteStrategy}
+                    isExecuting={isExecuting}
+                  />
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="history" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Swap History</CardTitle>
+              <CardDescription>
+                View your recent cross-chain swaps and their status
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {userSwaps.length === 0 ? (
+                <div className="text-center py-8 text-gray-500">
+                  No swaps found. Start by executing a cross-chain swap.
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {userSwaps.map((swap) => (
+                    <Card key={swap.swapId} className="p-4">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-4">
+                          {getStatusIcon(swap.status)}
+                          <div>
+                            <div className="font-semibold">
+                              {swap.fromAmount} {swap.fromToken} → {swap.toAmount} {swap.toToken}
+                            </div>
+                            <div className="text-sm text-gray-600">
+                              {swap.fromChain} → {swap.toChain}
+                            </div>
+                            <div className="text-xs text-gray-500">
+                              {new Date(swap.createdAt).toLocaleString()}
+                            </div>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <div className={`font-semibold ${getStatusColor(swap.status)}`}>
+                            {swap.status.replace('_', ' ').toUpperCase()}
+                          </div>
+                          <div className="text-sm text-gray-600">
+                            Strategy: {swap.strategy}
+                          </div>
+                        </div>
+                      </div>
+                    </Card>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="analytics" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Analytics Dashboard</CardTitle>
+              <CardDescription>
+                Track your DeFi performance and cross-chain activities
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <Card>
+                  <CardContent className="pt-6">
+                    <div className="text-2xl font-bold">{userSwaps.length}</div>
+                    <div className="text-sm text-gray-600">Total Swaps</div>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardContent className="pt-6">
+                    <div className="text-2xl font-bold text-green-600">
+                      {userSwaps.filter(s => s.status === 'completed').length}
+                    </div>
+                    <div className="text-sm text-gray-600">Successful Swaps</div>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardContent className="pt-6">
+                    <div className="text-2xl font-bold text-blue-600">
+                      {strategies.length}
+                    </div>
+                    <div className="text-sm text-gray-600">Available Strategies</div>
+                  </CardContent>
+                </Card>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }; 
