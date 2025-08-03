@@ -125,6 +125,7 @@ export const NEARCrossChainSwap: React.FC<NEARCrossChainSwapProps> = ({
 
     await executeSwap({
       fromChain: fromChain as any,
+      toChain: 'near',
       fromToken: getTokenAddress(fromChain, fromToken),
       toToken: getTokenAddress('near', toToken),
       fromAmount,
@@ -302,7 +303,7 @@ export const NEARCrossChainSwap: React.FC<NEARCrossChainSwapProps> = ({
             />
             <Button
               onClick={() => connectNEARWallet()}
-              variant="outline"
+              variant="neutral-secondary"
               className="px-4"
             >
               Connect
