@@ -272,9 +272,7 @@ abstract class BaseAgent {
     this.logger.error(`Error in ${context || 'unknown context'}:`, error);
     
     // Could add error reporting to external services here
-    if (process.env.SENTRY_DSN) {
-      // Sentry.error(error);
-    }
+    // Sentry integration can be added here when needed
   }
 }
 

@@ -1,0 +1,186 @@
+[11:58:42.966] Running build in Washington, D.C., USA (East) – iad1
+[11:58:42.966] Build machine configuration: 2 cores, 8 GB
+[11:58:42.982] Cloning github.com/monyverse/uniteai-wallet (Branch: main, Commit: 291b6ed)
+[11:58:43.114] Previous build caches not available
+[11:58:43.301] Cloning completed: 318.000ms
+[11:58:45.257] Running "vercel build"
+[11:58:45.712] Invalid Sentry Dsn: your_sentry_dsn_here
+[11:58:45.717] Vercel CLI 44.6.4
+[11:58:46.521] Installing dependencies...
+[11:58:52.797] npm warn deprecated yaeti@0.0.6: Package no longer supported. Contact Support at https://www.npmjs.com/support for more info.
+[11:58:55.190] npm warn deprecated mkdirp-promise@5.0.1: This package is broken and no longer maintained. 'mkdirp' itself supports promises now, please switch to that.
+[11:58:55.248] npm warn deprecated request@2.88.2: request has been deprecated, see https://github.com/request/request/issues/3142
+[11:58:55.704] npm warn deprecated lodash.isequal@4.5.0: This package is deprecated. Use require('node:util').isDeepStrictEqual instead.
+[11:58:56.304] npm warn deprecated node-domexception@1.0.0: Use your platform's native DOMException instead
+[11:58:56.344] npm warn deprecated inflight@1.0.6: This module is not supported, and leaks memory. Do not use it. Check out lru-cache if you want a good and tested way to coalesce async requests by a key value, which is much more comprehensive and powerful.
+[11:58:56.436] npm warn deprecated react-tsparticles@2.12.2: @tsparticles/react is the new version, please use that
+[11:58:56.508] npm warn deprecated multicodec@0.5.7: This module has been superseded by the multiformats module
+[11:58:56.591] npm warn deprecated multibase@0.6.1: This module has been superseded by the multiformats module
+[11:58:56.630] npm warn deprecated har-validator@5.1.5: this library is no longer supported
+[11:58:57.328] npm warn deprecated eth-sig-util@3.0.1: Deprecated in favor of '@metamask/eth-sig-util'
+[11:58:57.452] npm warn deprecated ethereumjs-abi@0.6.8: This library has been deprecated and usage is discouraged.
+[11:58:59.381] npm warn deprecated @types/minimatch@6.0.0: This is a stub types definition. minimatch provides its own type definitions, so you do not need this installed.
+[11:59:02.622] npm warn deprecated @paulmillr/qr@0.2.1: The package is now available as "qr": npm install qr
+[11:59:03.479] npm warn deprecated @humanwhocodes/object-schema@2.0.3: Use @eslint/object-schema instead
+[11:59:03.532] npm warn deprecated @humanwhocodes/config-array@0.13.0: Use @eslint/config-array instead
+[11:59:05.596] npm warn deprecated glob@7.1.7: Glob versions prior to v9 are no longer supported
+[11:59:05.686] npm warn deprecated glob@7.2.3: Glob versions prior to v9 are no longer supported
+[11:59:05.868] npm warn deprecated glob@7.2.3: Glob versions prior to v9 are no longer supported
+[11:59:06.010] npm warn deprecated glob@7.2.3: Glob versions prior to v9 are no longer supported
+[11:59:06.064] npm warn deprecated glob@5.0.15: Glob versions prior to v9 are no longer supported
+[11:59:06.830] npm warn deprecated glob@8.1.0: Glob versions prior to v9 are no longer supported
+[11:59:06.953] npm warn deprecated uuid@3.4.0: Please upgrade  to version 7 or higher.  Older versions may use Math.random() in certain circumstances, which is known to be problematic.  See https://v8.dev/blog/math-random for details.
+[11:59:07.104] npm warn deprecated glob@7.2.3: Glob versions prior to v9 are no longer supported
+[11:59:07.308] npm warn deprecated glob@7.2.3: Glob versions prior to v9 are no longer supported
+[11:59:07.605] npm warn deprecated cids@0.7.5: This module has been superseded by the multiformats module
+[11:59:07.736] npm warn deprecated glob@7.2.3: Glob versions prior to v9 are no longer supported
+[11:59:07.736] npm warn deprecated rimraf@3.0.2: Rimraf versions prior to v4 are no longer supported
+[11:59:08.605] npm warn deprecated multibase@0.7.0: This module has been superseded by the multiformats module
+[11:59:09.657] npm warn deprecated multicodec@1.0.4: This module has been superseded by the multiformats module
+[11:59:10.727] npm warn deprecated @aptos-labs/aptos-client@0.1.1: <1.0.0 is no longer supported please upgrade to the latest version
+[11:59:11.304] npm warn deprecated glob@7.2.3: Glob versions prior to v9 are no longer supported
+[11:59:12.064] npm warn deprecated rimraf@2.7.1: Rimraf versions prior to v4 are no longer supported
+[11:59:12.341] npm warn deprecated glob@7.2.0: Glob versions prior to v9 are no longer supported
+[11:59:12.818] npm warn deprecated rimraf@2.7.1: Rimraf versions prior to v4 are no longer supported
+[11:59:13.497] npm warn deprecated glob@7.2.0: Glob versions prior to v9 are no longer supported
+[11:59:15.654] npm warn deprecated glob@7.2.0: Glob versions prior to v9 are no longer supported
+[11:59:17.153] npm warn deprecated glob@7.2.0: Glob versions prior to v9 are no longer supported
+[11:59:18.244] npm warn deprecated rimraf@2.7.1: Rimraf versions prior to v4 are no longer supported
+[11:59:19.043] npm warn deprecated glob@7.2.0: Glob versions prior to v9 are no longer supported
+[11:59:19.653] npm warn deprecated rimraf@2.7.1: Rimraf versions prior to v4 are no longer supported
+[11:59:19.933] npm warn deprecated glob@7.2.0: Glob versions prior to v9 are no longer supported
+[11:59:23.847] npm warn deprecated zksync-web3@0.14.4: This package has been deprecated in favor of zksync-ethers@5.0.0
+[11:59:24.358] npm warn deprecated zksync-web3@0.14.4: This package has been deprecated in favor of zksync-ethers@5.0.0
+[11:59:26.663] npm warn deprecated zksync-web3@0.14.4: This package has been deprecated in favor of zksync-ethers@5.0.0
+[11:59:27.432] npm warn deprecated zksync-web3@0.14.4: This package has been deprecated in favor of zksync-ethers@5.0.0
+[11:59:32.745] npm warn deprecated eslint@8.57.1: This version is no longer supported. Please see https://eslint.org/version-support for other options.
+[11:59:34.422] npm warn deprecated aptos@1.21.0: Package aptos is no longer supported, please migrate to https://www.npmjs.com/package/@aptos-labs/ts-sdk
+[11:59:49.243] npm warn deprecated tsparticles-engine@2.12.0: starting from tsparticles v3 the packages are now moved to @tsparticles/package-name instead of tsparticles-package-name
+[12:00:40.056] 
+[12:00:40.057] added 3027 packages in 2m
+[12:00:40.058] 
+[12:00:40.058] 375 packages are looking for funding
+[12:00:40.058]   run `npm fund` for details
+[12:00:40.121] Detected Next.js version: 14.2.31
+[12:00:40.140] Running "npm run build"
+[12:00:40.249] 
+[12:00:40.249] > uniteai-wallet@1.0.0 build
+[12:00:40.249] > next build
+[12:00:40.249] 
+[12:00:40.782] Attention: Next.js now collects completely anonymous telemetry regarding usage.
+[12:00:40.783] This information is used to shape Next.js' roadmap and prioritize features.
+[12:00:40.783] You can learn more, including how to opt-out if you'd not like to participate in this anonymous program, by visiting the following URL:
+[12:00:40.784] https://nextjs.org/telemetry
+[12:00:40.784] 
+[12:00:40.837]   ▲ Next.js 14.2.31
+[12:00:40.837] 
+[12:00:40.897]    Creating an optimized production build ...
+[12:01:36.104] Failed to compile.
+[12:01:36.107] 
+[12:01:36.107] ./app/globals.css.webpack[javascript/auto]!=!./node_modules/next/dist/build/webpack/loaders/css-loader/src/index.js??ruleSet[1].rules[14].oneOf[12].use[2]!./node_modules/next/dist/build/webpack/loaders/postcss-loader/src/index.js??ruleSet[1].rules[14].oneOf[12].use[3]!./app/globals.css
+[12:01:36.108] Error: Cannot find module 'postcss-nesting'
+[12:01:36.108] Require stack:
+[12:01:36.108] - /vercel/path0/node_modules/tailwindcss/lib/postcss-plugins/nesting/plugin.js
+[12:01:36.109] - /vercel/path0/node_modules/tailwindcss/lib/postcss-plugins/nesting/index.js
+[12:01:36.109] - /vercel/path0/node_modules/tailwindcss/nesting/index.js
+[12:01:36.109] - /vercel/path0/node_modules/next/dist/build/webpack/config/blocks/css/plugins.js
+[12:01:36.110] - /vercel/path0/node_modules/next/dist/build/webpack/config/blocks/css/index.js
+[12:01:36.110] - /vercel/path0/node_modules/next/dist/build/webpack/config/index.js
+[12:01:36.110] - /vercel/path0/node_modules/next/dist/build/webpack-config.js
+[12:01:36.110] - /vercel/path0/node_modules/next/dist/build/webpack/plugins/next-trace-entrypoints-plugin.js
+[12:01:36.111] - /vercel/path0/node_modules/next/dist/build/collect-build-traces.js
+[12:01:36.111] - /vercel/path0/node_modules/next/dist/build/index.js
+[12:01:36.111] - /vercel/path0/node_modules/next/dist/cli/next-build.js
+[12:01:36.112]     at Function.<anonymous> (node:internal/modules/cjs/loader:1401:15)
+[12:01:36.112]     at /vercel/path0/node_modules/next/dist/server/require-hook.js:55:36
+[12:01:36.112]     at defaultResolveImpl (node:internal/modules/cjs/loader:1057:19)
+[12:01:36.112]     at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1062:22)
+[12:01:36.113]     at Function._load (node:internal/modules/cjs/loader:1211:37)
+[12:01:36.113]     at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+[12:01:36.113]     at wrapModuleLoad (node:internal/modules/cjs/loader:235:24)
+[12:01:36.114]     at Module.<anonymous> (node:internal/modules/cjs/loader:1487:12)
+[12:01:36.114]     at mod.require (/vercel/path0/node_modules/next/dist/server/require-hook.js:65:28)
+[12:01:36.114]     at require (node:internal/modules/helpers:135:16)
+[12:01:36.114] 
+[12:01:36.115] Import trace for requested module:
+[12:01:36.115] ./app/globals.css.webpack[javascript/auto]!=!./node_modules/next/dist/build/webpack/loaders/css-loader/src/index.js??ruleSet[1].rules[14].oneOf[12].use[2]!./node_modules/next/dist/build/webpack/loaders/postcss-loader/src/index.js??ruleSet[1].rules[14].oneOf[12].use[3]!./app/globals.css
+[12:01:36.115] ./app/globals.css
+[12:01:36.116] 
+[12:01:36.116] ./app/globals.css
+[12:01:36.116] Error: Cannot find module 'postcss-nesting'
+[12:01:36.116] Require stack:
+[12:01:36.117] - /vercel/path0/node_modules/tailwindcss/lib/postcss-plugins/nesting/plugin.js
+[12:01:36.117] - /vercel/path0/node_modules/tailwindcss/lib/postcss-plugins/nesting/index.js
+[12:01:36.117] - /vercel/path0/node_modules/tailwindcss/nesting/index.js
+[12:01:36.118] - /vercel/path0/node_modules/next/dist/build/webpack/config/blocks/css/plugins.js
+[12:01:36.118] - /vercel/path0/node_modules/next/dist/build/webpack/config/blocks/css/index.js
+[12:01:36.118] - /vercel/path0/node_modules/next/dist/build/webpack/config/index.js
+[12:01:36.118] - /vercel/path0/node_modules/next/dist/build/webpack-config.js
+[12:01:36.119] - /vercel/path0/node_modules/next/dist/build/webpack/plugins/next-trace-entrypoints-plugin.js
+[12:01:36.119] - /vercel/path0/node_modules/next/dist/build/collect-build-traces.js
+[12:01:36.119] - /vercel/path0/node_modules/next/dist/build/index.js
+[12:01:36.120] - /vercel/path0/node_modules/next/dist/cli/next-build.js
+[12:01:36.120]     at Function.<anonymous> (node:internal/modules/cjs/loader:1401:15)
+[12:01:36.120]     at /vercel/path0/node_modules/next/dist/server/require-hook.js:55:36
+[12:01:36.120]     at defaultResolveImpl (node:internal/modules/cjs/loader:1057:19)
+[12:01:36.121]     at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1062:22)
+[12:01:36.121]     at Function._load (node:internal/modules/cjs/loader:1211:37)
+[12:01:36.121]     at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+[12:01:36.122]     at wrapModuleLoad (node:internal/modules/cjs/loader:235:24)
+[12:01:36.122]     at Module.<anonymous> (node:internal/modules/cjs/loader:1487:12)
+[12:01:36.122]     at mod.require (/vercel/path0/node_modules/next/dist/server/require-hook.js:65:28)
+[12:01:36.123]     at require (node:internal/modules/helpers:135:16)
+[12:01:36.124]     at tryRunOrWebpackError (/vercel/path0/node_modules/next/dist/compiled/webpack/bundle5.js:28:312989)
+[12:01:36.124]     at __webpack_require_module__ (/vercel/path0/node_modules/next/dist/compiled/webpack/bundle5.js:28:131165)
+[12:01:36.124]     at __nested_webpack_require_153728__ (/vercel/path0/node_modules/next/dist/compiled/webpack/bundle5.js:28:130607)
+[12:01:36.124]     at /vercel/path0/node_modules/next/dist/compiled/webpack/bundle5.js:28:131454
+[12:01:36.125]     at symbolIterator (/vercel/path0/node_modules/next/dist/compiled/neo-async/async.js:1:14444)
+[12:01:36.126]     at done (/vercel/path0/node_modules/next/dist/compiled/neo-async/async.js:1:14824)
+[12:01:36.126]     at Hook.eval [as callAsync] (eval at create (/vercel/path0/node_modules/next/dist/compiled/webpack/bundle5.js:13:28858), <anonymous>:15:1)
+[12:01:36.126]     at /vercel/path0/node_modules/next/dist/compiled/webpack/bundle5.js:28:130328
+[12:01:36.126]     at symbolIterator (/vercel/path0/node_modules/next/dist/compiled/neo-async/async.js:1:14402)
+[12:01:36.126]     at timesSync (/vercel/path0/node_modules/next/dist/compiled/neo-async/async.js:1:5027)
+[12:01:36.126] -- inner error --
+[12:01:36.126] Error: Cannot find module 'postcss-nesting'
+[12:01:36.126] Require stack:
+[12:01:36.126] - /vercel/path0/node_modules/tailwindcss/lib/postcss-plugins/nesting/plugin.js
+[12:01:36.126] - /vercel/path0/node_modules/tailwindcss/lib/postcss-plugins/nesting/index.js
+[12:01:36.127] - /vercel/path0/node_modules/tailwindcss/nesting/index.js
+[12:01:36.127] - /vercel/path0/node_modules/next/dist/build/webpack/config/blocks/css/plugins.js
+[12:01:36.127] - /vercel/path0/node_modules/next/dist/build/webpack/config/blocks/css/index.js
+[12:01:36.127] - /vercel/path0/node_modules/next/dist/build/webpack/config/index.js
+[12:01:36.127] - /vercel/path0/node_modules/next/dist/build/webpack-config.js
+[12:01:36.127] - /vercel/path0/node_modules/next/dist/build/webpack/plugins/next-trace-entrypoints-plugin.js
+[12:01:36.127] - /vercel/path0/node_modules/next/dist/build/collect-build-traces.js
+[12:01:36.127] - /vercel/path0/node_modules/next/dist/build/index.js
+[12:01:36.127] - /vercel/path0/node_modules/next/dist/cli/next-build.js
+[12:01:36.127]     at Function.<anonymous> (node:internal/modules/cjs/loader:1401:15)
+[12:01:36.127]     at /vercel/path0/node_modules/next/dist/server/require-hook.js:55:36
+[12:01:36.127]     at defaultResolveImpl (node:internal/modules/cjs/loader:1057:19)
+[12:01:36.128]     at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1062:22)
+[12:01:36.128]     at Function._load (node:internal/modules/cjs/loader:1211:37)
+[12:01:36.128]     at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+[12:01:36.128]     at wrapModuleLoad (node:internal/modules/cjs/loader:235:24)
+[12:01:36.128]     at Module.<anonymous> (node:internal/modules/cjs/loader:1487:12)
+[12:01:36.128]     at mod.require (/vercel/path0/node_modules/next/dist/server/require-hook.js:65:28)
+[12:01:36.128]     at require (node:internal/modules/helpers:135:16)
+[12:01:36.128]     at Object.<anonymous> (/vercel/path0/node_modules/next/dist/build/webpack/loaders/css-loader/src/index.js??ruleSet[1].rules[14].oneOf[12].use[2]!/vercel/path0/node_modules/next/dist/build/webpack/loaders/postcss-loader/src/index.js??ruleSet[1].rules[14].oneOf[12].use[3]!/vercel/path0/app/globals.css:1:7)
+[12:01:36.128]     at /vercel/path0/node_modules/next/dist/compiled/webpack/bundle5.js:28:922493
+[12:01:36.128]     at Hook.eval [as call] (eval at create (/vercel/path0/node_modules/next/dist/compiled/webpack/bundle5.js:13:28636), <anonymous>:7:1)
+[12:01:36.128]     at /vercel/path0/node_modules/next/dist/compiled/webpack/bundle5.js:28:131198
+[12:01:36.130]     at tryRunOrWebpackError (/vercel/path0/node_modules/next/dist/compiled/webpack/bundle5.js:28:312943)
+[12:01:36.130]     at __webpack_require_module__ (/vercel/path0/node_modules/next/dist/compiled/webpack/bundle5.js:28:131165)
+[12:01:36.130]     at __nested_webpack_require_153728__ (/vercel/path0/node_modules/next/dist/compiled/webpack/bundle5.js:28:130607)
+[12:01:36.130]     at /vercel/path0/node_modules/next/dist/compiled/webpack/bundle5.js:28:131454
+[12:01:36.130]     at symbolIterator (/vercel/path0/node_modules/next/dist/compiled/neo-async/async.js:1:14444)
+[12:01:36.130]     at done (/vercel/path0/node_modules/next/dist/compiled/neo-async/async.js:1:14824)
+[12:01:36.130] 
+[12:01:36.130] Generated code for /vercel/path0/node_modules/next/dist/build/webpack/loaders/css-loader/src/index.js??ruleSet[1].rules[14].oneOf[12].use[2]!/vercel/path0/node_modules/next/dist/build/webpack/loaders/postcss-loader/src/index.js??ruleSet[1].rules[14].oneOf[12].use[3]!/vercel/path0/app/globals.css
+[12:01:36.130] 
+[12:01:36.131] Import trace for requested module:
+[12:01:36.131] ./app/globals.css
+[12:01:36.132] 
+[12:01:36.133] 
+[12:01:36.133] > Build failed because of webpack errors
+[12:01:36.239] Error: Command "npm run build" exited with 1
+[12:01:40.782] Exiting build container
