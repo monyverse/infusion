@@ -15,11 +15,17 @@ typechain-types/
 # NEAR Contracts - exclude large build artifacts
 near-contracts/target/
 near-contracts/**/target/
+near-contracts/target/debug/
+near-contracts/target/release/
+near-contracts/target/wasm32-unknown-unknown/
 near-contracts/**/Cargo.lock
 near-contracts/**/Cargo.toml.lock
 
 # Rust build artifacts
 **/target/
+**/target/debug/
+**/target/release/
+**/target/wasm32-unknown-unknown/
 **/Cargo.lock
 **/*.rs.bk
 **/*.pdb
