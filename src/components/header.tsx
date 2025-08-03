@@ -1,21 +1,9 @@
 'use client'
 
-import { useState } from 'react'
 import { Button } from '@/components/ui/button'
-import { useToast } from '@/hooks/use-toast'
+import { HeaderWallet } from '@/components/header-wallet'
 
 export function Header() {
-  const [isConnected, setIsConnected] = useState(false)
-  const { toast } = useToast()
-
-  const handleConnect = () => {
-    setIsConnected(!isConnected)
-    toast({
-      title: isConnected ? "Wallet Disconnected" : "Wallet Connected",
-      description: isConnected ? "Your wallet has been disconnected" : "Successfully connected to wallet",
-    })
-  }
-
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-black/20 backdrop-blur-md border-b border-white/10">
       <div className="container mx-auto px-6 py-4">
@@ -38,24 +26,8 @@ export function Header() {
 
           {/* Navigation and Actions */}
           <div className="flex items-center space-x-4">
-            {/* Network Status */}
-            <div className="hidden sm:flex items-center space-x-2 text-sm">
-              <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-              <span className="text-gray-300">Multi-Chain Connected</span>
-            </div>
-
-            {/* Connect Wallet Button */}
-            <Button
-              onClick={handleConnect}
-              variant={isConnected ? "neutral-secondary" : "default"}
-              className={`${
-                isConnected 
-                  ? 'border-green-500 text-green-500 hover:bg-green-500/10' 
-                  : 'bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700'
-              }`}
-            >
-              {isConnected ? 'Connected' : 'Connect Wallet'}
-            </Button>
+            {/* AppKit Wallet Integration */}
+            <HeaderWallet />
 
             {/* Settings Menu */}
             <Button variant="neutral-secondary" size="sm" className="text-gray-300 hover:text-white">

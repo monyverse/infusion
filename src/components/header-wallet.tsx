@@ -12,7 +12,7 @@ import {
 } from '@reown/appkit/react'
 import { modal } from '@reown/appkit/react'
 
-export function WalletConnect() {
+export function HeaderWallet() {
   const [isConnecting, setIsConnecting] = useState(false)
   const { toast } = useToast()
   const { address, isConnected } = useAppKitAccount()
@@ -59,42 +59,36 @@ export function WalletConnect() {
 
   if (!isConnected) {
     return (
-      <div className="fixed bottom-6 right-6 z-50">
-        <AppKitConnectButton
-          size="md"
-          label={isConnecting ? "Connecting..." : "Connect Wallet"}
-          loadingLabel="Connecting..."
-        />
-      </div>
+      <AppKitConnectButton
+        size="md"
+        label={isConnecting ? "Connecting..." : "Connect Wallet"}
+        loadingLabel="Connecting..."
+      />
     )
   }
 
   return (
-    <div className="fixed bottom-6 right-6 z-50">
-      <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-full px-4 py-2 flex items-center space-x-3">
-        <div className="flex items-center space-x-2">
-          <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-          <span className="text-white text-sm font-medium">
-            {address ? `${address.slice(0, 6)}...${address.slice(-4)}` : 'Connected'}
-          </span>
-          {caipNetwork && (
-            <span className="text-gray-300 text-xs">
-              {caipNetwork.name}
-            </span>
-          )}
-        </div>
-        <div className="flex items-center space-x-2">
-          <AppKitNetworkButton />
-          <AppKitAccountButton />
-        </div>
+    <div className="flex items-center space-x-2">
+      {/* Network Status */}
+      <div className="hidden sm:flex items-center space-x-2 text-sm">
+        <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+        <span className="text-gray-300">
+          {caipNetwork ? caipNetwork.name : 'Connected'}
+        </span>
+      </div>
+
+      {/* Wallet Address */}
+      <div className="hidden md:flex items-center space-x-2">
+        <span className="text-white text-sm font-medium">
+          {address ? `${address.slice(0, 6)}...${address.slice(-4)}` : 'Connected'}
+        </span>
+      </div>
+
+      {/* Network and Account Buttons */}
+      <div className="flex items-center space-x-1">
+        <AppKitNetworkButton />
+        <AppKitAccountButton />
       </div>
     </div>
   )
-}
-
-// Add ethereum to window type for backward compatibility
-declare global {
-  interface Window {
-    ethereum?: Record<string, unknown>
-  }
 } 
