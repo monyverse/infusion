@@ -465,7 +465,7 @@ export const MultiChainSwap: React.FC = () => {
                 </div>
 
                 <div className="flex items-end">
-                  <Button onClick={handleSwitchChains} variant="outline" className="w-full">
+                  <Button onClick={handleSwitchChains} variant="neutral-secondary" className="w-full">
                     <ArrowRight className="w-4 h-4 mr-2" />
                     Switch Chains
                   </Button>
