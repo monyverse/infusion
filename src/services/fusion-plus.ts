@@ -69,7 +69,15 @@ export class FusionPlusService {
     this.config = config;
     this.apiKey = config.apiKey;
     this.provider = new ethers.JsonRpcProvider(config.rpcUrl);
-    this.wallet = new ethers.Wallet(config.privateKey, this.provider);
+    
+    // Handle empty or invalid private key gracefully
+    try {
+      this.wallet = new ethers.Wallet(config.privateKey, this.provider);
+    } catch (error) {
+      console.warn('Invalid private key provided, using mock wallet for development');
+      // Create a mock wallet for development
+      this.wallet = new ethers.Wallet('0x1234567890123456789012345678901234567890123456789012345678901234', this.provider);
+    }
     
     // Initialize Fusion SDK v2
     this.fusionSDK = new FusionSDK({

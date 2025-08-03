@@ -1357,8 +1357,8 @@ export class FusionPlusL1Extension {
     }));
     this.l1Services.set('tron', new TronService({ rpcUrl: 'https://api.trongrid.io', contractAddress: 'mock_contract' }));
     this.l1Services.set('ton', new TONService({ rpcUrl: 'https://toncenter.com/api/v2/jsonRPC', walletAddress: 'mock_wallet' }));
-    this.l1Services.set('monad', new MonadService({ rpcUrl: 'https://rpc.monad.xyz', privateKey: 'mock_key', contractAddress: 'mock_contract' }));
-    this.l1Services.set('starknet', new StarknetService({ rpcUrl: 'https://alpha-mainnet.starknet.io', accountAddress: 'mock_account', privateKey: 'mock_key' }));
+    this.l1Services.set('monad', new MonadService({ rpcUrl: 'https://rpc.monad.xyz', privateKey: '0x1234567890123456789012345678901234567890123456789012345678901234', contractAddress: 'mock_contract' }));
+    this.l1Services.set('starknet', new StarknetService({ rpcUrl: 'https://alpha-mainnet.starknet.io', accountAddress: 'mock_account', privateKey: '0x1234567890123456789012345678901234567890123456789012345678901234' }));
     this.l1Services.set('cardano', new CardanoService({ rpcUrl: 'https://cardano-mainnet.blockfrost.io/api/v0', walletAddress: 'mock_wallet' }));
     this.l1Services.set('xrp', new XRPLedgerService({ rpcUrl: 'https://s1.ripple.com:51234', walletAddress: 'mock_wallet' }));
     this.l1Services.set('icp', new ICPService({ rpcUrl: 'https://ic0.app', canisterId: 'mock_canister' }));
