@@ -247,14 +247,14 @@ export function PortfolioOverview() {
 
             <div className="mt-4 flex space-x-2">
               <Button
-                variant="outline"
+                variant="neutral-secondary"
                 size="sm"
                 className="flex-1 border-white/20 text-white hover:bg-white/10"
               >
                 Send
               </Button>
               <Button
-                variant="outline"
+                variant="neutral-secondary"
                 size="sm"
                 className="flex-1 border-white/20 text-white hover:bg-white/10"
               >
