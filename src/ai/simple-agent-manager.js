@@ -111,7 +111,7 @@ class SimpleAgentManager {
 const agentManager = new SimpleAgentManager();
 
 // Start the agent manager
-console.log('🚀 Starting UniteAI Agent Manager...');
+console.log('🚀 Starting InFusion Agent Manager...');
 
 const isHealthy = agentManager.healthCheck();
 if (isHealthy) {

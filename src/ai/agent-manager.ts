@@ -130,7 +130,7 @@ module.exports = { agentManager };
 if (require.main === module) {
   (async () => {
     try {
-      console.log('🚀 Starting UniteAI Agent Manager...');
+      console.log('🚀 Starting InFusion Agent Manager...');
       
       const isHealthy = await agentManager.healthCheck();
       if (isHealthy) {

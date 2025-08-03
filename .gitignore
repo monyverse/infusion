@@ -304,3 +304,4 @@ config.old/
 # Local development data
 local-data/
 dev-data/ 
+.vercel

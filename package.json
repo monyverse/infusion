@@ -1,7 +1,7 @@
 {
-  "name": "uniteai-wallet",
+  "name": "infusion",
   "version": "1.0.0",
-  "description": "AI-Powered Cross-Chain Wallet Automation with 1inch Fusion+ Integration",
+  "description": "AI-Powered Cross-Chain DeFi Platform with 1inch Fusion+ Integration",
   "main": "index.js",
   "scripts": {
     "dev": "concurrently \"npm run dev:frontend\" \"npm run dev:backend\" \"npm run dev:ai\"",
@@ -80,7 +80,7 @@
     "setup:quick": "chmod +x scripts/setup-dev.sh && ./scripts/setup-dev.sh --skip-tests --skip-lint"
   },
   "keywords": [
-    "ai-wallet",
+    "infusion",
     "cross-chain",
     "defi",
     "1inch",
@@ -94,7 +94,7 @@
     "intent-based",
     "limit-orders"
   ],
-  "author": "UniteAI Wallet Team",
+  "author": "InFusion Team",
   "license": "MIT",
   "dependencies": {
     "@1inch/byte-utils": "^3.1.0",

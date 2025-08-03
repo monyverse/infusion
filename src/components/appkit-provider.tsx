@@ -27,9 +27,9 @@ export function AppkitProvider({ children }: { children: React.ReactNode }) {
       <ReownAppkitProvider
         projectId={process.env.NEXT_PUBLIC_PROJECT_ID || 'demo-project-id'}
         metadata={{
-          name: 'UniteAI Wallet',
+          name: 'InFusion',
           description: 'AI-Powered Cross-Chain DeFi Platform',
-          url: 'https://uniteai.wallet',
+          url: 'https://infusion.defi',
           icons: ['/icon.png']
         }}
         networks={[

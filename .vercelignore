@@ -1,0 +1,165 @@
+# Dependencies
+node_modules/
+
+# Build outputs
+.next/
+out/
+dist/
+build/
+
+# Hardhat artifacts
+cache/
+artifacts/
+typechain-types/
+
+# NEAR Contracts - exclude large build artifacts
+near-contracts/target/
+near-contracts/**/target/
+near-contracts/**/Cargo.lock
+near-contracts/**/Cargo.toml.lock
+
+# Rust build artifacts
+**/target/
+**/Cargo.lock
+**/*.rs.bk
+**/*.pdb
+
+# Logs
+logs/
+*.log
+
+# Coverage directory
+coverage/
+*.lcov
+
+# Cache directories
+.cache
+.parcel-cache
+.eslintcache
+
+# Temporary folders
+tmp/
+temp/
+
+# Editor directories
+.vscode/
+.idea/
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Database files
+*.db
+*.sqlite
+
+# AI/ML models
+models/
+*.model
+*.weights
+
+# Wallet files
+wallets/
+*.key
+*.pem
+
+# Test files
+test-results/
+
+# Documentation build
+docs/build/
+
+# Local development
+.local/
+
+# Bitcoin data
+btc/wallets/
+btc/keys/
+btc/*.key
+btc/*.dat
+
+# EVM Contracts build artifacts
+evm/artifacts/
+evm/cache/
+evm/coverage/
+
+# TypeScript build info
+*.tsbuildinfo
+tsconfig.tsbuildinfo
+
+# Docker
+.dockerignore
+docker-compose.override.yml
+
+# Monitoring data
+prometheus_data/
+grafana_data/
+
+# Local node data
+near-data/
+near-node/
+bitcoin-data/
+.bitcoin/
+
+# Backup files
+*.bak
+*.backup
+*.old
+
+# Compiled contracts
+*.wasm
+*.wasm.gz
+*.abi.json
+*.abi.zst
+
+# NEAR credentials
+.near-credentials/
+.near/
+near-cli-config.json
+
+# Chain-specific credentials
+*-keys/
+*-credentials/
+
+# AI/ML specific
+ai/models/
+ai/cache/
+ai/training-data/
+ai/checkpoints/
+
+# Backend specific
+backend/logs/
+backend/uploads/
+backend/temp/
+
+# Scripts output
+scripts/output/
+scripts/logs/
+
+# Test artifacts
+test/artifacts/
+test/coverage/
+test/results/
+
+# Deployment artifacts
+deployments/
+deploy-artifacts/
+
+# Configuration backups
+config.backup/
+config.old/
+
+# Local development data
+local-data/
+dev-data/
+
+# Large files
+*.pack
+*.pack.gz
+*.pack.old
+trace 

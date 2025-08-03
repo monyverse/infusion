@@ -2,7 +2,7 @@ import { ethers } from "hardhat";
 import { verify } from "./verify";
 
 async function main() {
-  console.log("🚀 Deploying UniteAI Wallet contracts to testnet...");
+  console.log("🚀 Deploying InFusion contracts to testnet...");
 
   const [deployer] = await ethers.getSigners();
   console.log("Deploying contracts with account:", deployer.address);
@@ -15,13 +15,13 @@ async function main() {
   const customLimitOrderAddress = await customLimitOrder.getAddress();
   console.log("✅ Custom Limit Order deployed to:", customLimitOrderAddress);
 
-  // Deploy UniteAI Wallet
-  console.log("\n🤖 Deploying UniteAI Wallet...");
-  const UniteAIWallet = await ethers.getContractFactory("UniteAIWallet");
-  const uniteAIWallet = await UniteAIWallet.deploy();
-  await uniteAIWallet.waitForDeployment();
-  const uniteAIWalletAddress = await uniteAIWallet.getAddress();
-  console.log("✅ UniteAI Wallet deployed to:", uniteAIWalletAddress);
+  // Deploy InFusion Wallet
+console.log("\n🤖 Deploying InFusion Wallet...");
+const InFusionWallet = await ethers.getContractFactory("InFusionWallet");
+const infusionWallet = await InFusionWallet.deploy();
+await infusionWallet.waitForDeployment();
+const infusionWalletAddress = await infusionWallet.getAddress();
+console.log("✅ InFusion Wallet deployed to:", infusionWalletAddress);
 
   // Deploy Bitcoin Bridge for HTLC functionality
   console.log("\n🔗 Deploying Bitcoin Bridge...");
@@ -110,7 +110,7 @@ async function main() {
   for (const network of networks) {
     console.log(`📡 ${network.name} (Chain ID: ${network.chainId})`);
     console.log(`   - Custom Limit Order: ${customLimitOrderAddress}`);
-    console.log(`   - UniteAI Wallet: ${uniteAIWalletAddress}`);
+    console.log(`   - InFusion Wallet: ${infusionWalletAddress}`);
     console.log(`   - Bitcoin Bridge: ${bitcoinBridgeAddress}`);
     console.log(`   - Mock ETH: ${mockETHAddress}`);
     console.log(`   - Mock BTC: ${mockBTCAddress}`);
@@ -124,7 +124,7 @@ async function main() {
     networks: {
       sepolia: {
         customLimitOrder: customLimitOrderAddress,
-        uniteAIWallet: uniteAIWalletAddress,
+        infusionWallet: infusionWalletAddress,
         bitcoinBridge: bitcoinBridgeAddress,
         mockETH: mockETHAddress,
         mockBTC: mockBTCAddress,

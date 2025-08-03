@@ -8,19 +8,19 @@ import { Toaster } from '@/components/ui/toaster'
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: 'UniteAI Wallet - AI-Powered Cross-Chain DeFi',
+  title: 'InFusion - AI-Powered Cross-Chain DeFi',
   description: 'Revolutionary DeFi platform combining AI with cross-chain atomic swaps across 17+ blockchain networks',
-  authors: [{ name: 'UniteAI Wallet Team' }],
+  authors: [{ name: 'InFusion Team' }],
   keywords: ['DeFi', 'AI', 'Cross-Chain', 'Bitcoin', 'Ethereum', 'NEAR', 'Solana', 'Atomic Swaps'],
   openGraph: {
-    title: 'UniteAI Wallet - AI-Powered Cross-Chain DeFi',
+    title: 'InFusion - AI-Powered Cross-Chain DeFi',
     description: 'Revolutionary DeFi platform combining AI with cross-chain atomic swaps',
-    url: 'https://uniteai.wallet',
+    url: 'https://infusion.defi',
     type: 'website',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'UniteAI Wallet - AI-Powered Cross-Chain DeFi',
+    title: 'InFusion - AI-Powered Cross-Chain DeFi',
     description: 'Revolutionary DeFi platform combining AI with cross-chain atomic swaps',
   },
 }

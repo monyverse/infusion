@@ -1,6 +1,6 @@
 # 🔁 Cross-Chain Atomic Swaps Implementation
 
-This document describes the implementation of cross-chain atomic swaps using Hash Time-Locked Contracts (HTLC) and 1inch Fusion+ technology in the UniteAI Wallet.
+This document describes the implementation of cross-chain atomic swaps using Hash Time-Locked Contracts (HTLC) and 1inch Fusion+ technology in the InFusion platform.
 
 ## 🏗️ Architecture Overview
 

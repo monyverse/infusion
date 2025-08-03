@@ -3,9 +3,6 @@
   "outputDirectory": ".next",
   "framework": "nextjs",
   "installCommand": "npm install",
-  "env": {
-    "NEXT_PUBLIC_PROJECT_ID": "@next_public_project_id"
-  },
   "functions": {
     "app/api/**/*.ts": {
       "maxDuration": 30

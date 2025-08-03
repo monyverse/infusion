@@ -1,4 +1,4 @@
-# 🚀 UniteAI Wallet - AI-Powered Cross-Chain DeFi Platform
+# 🚀 InFusion - AI-Powered Cross-Chain DeFi Platform
 
 A revolutionary DeFi platform that combines artificial intelligence with cross-chain atomic swaps across 17+ blockchain networks. Built with Next.js, TypeScript, and cutting-edge blockchain technologies.
 
@@ -59,8 +59,8 @@ A revolutionary DeFi platform that combines artificial intelligence with cross-c
 
 1. **Clone the repository**
 ```bash
-git clone https://github.com/monyverse/uniteai-wallet.git
-cd uniteai-wallet
+git clone https://github.com/monyverse/infusion.git
+cd infusion
 ```
 
 2. **Install dependencies**
@@ -121,7 +121,7 @@ Navigate to [http://localhost:3000](http://localhost:3000)
 
 ### **Project Structure**
 ```
-uniteai-wallet/
+infusion/
 ├── app/                    # Next.js App Router
 ├── src/
 │   ├── components/         # React components
@@ -230,10 +230,10 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 📞 **Support**
 
-- **Documentation**: [docs.uniteai.wallet](https://docs.uniteai.wallet)
-- **Discord**: [Join our community](https://discord.gg/uniteai)
-- **Twitter**: [@UniteAIWallet](https://twitter.com/UniteAIWallet)
-- **Email**: support@uniteai.wallet
+- **Documentation**: [docs.infusion.defi](https://docs.infusion.defi)
+- **Discord**: [Join our community](https://discord.gg/infusion)
+- **Twitter**: [@InFusionDeFi](https://twitter.com/InFusionDeFi)
+- **Email**: support@infusion.defi
 
 ## 🙏 **Acknowledgments**
 
@@ -245,6 +245,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ---
 
-**Built with ❤️ by the UniteAI Team**
+**Built with ❤️ by the InFusion Team**
 
 *Revolutionizing DeFi through AI and cross-chain innovation* 

@@ -14,7 +14,7 @@ export class Logger {
         winston.format.errors({ stack: true }),
         winston.format.json()
       ),
-      defaultMeta: { service: 'uniteai-wallet', context },
+      defaultMeta: { service: 'infusion', context },
       transports: [
         new winston.transports.Console({
           format: winston.format.combine(
