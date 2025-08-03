@@ -10,7 +10,9 @@ import { Progress } from '../ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
 import { Alert, AlertDescription } from '../ui/alert';
 import { createFusionPlusL1Extension, CrossChainSwapRequest, CrossChainSwapStatus, DeFiStrategy, StrategyParams } from '../../services/fusion-plus-l1-extension';
-import { ArrowRight, ArrowUpDown, TrendingUp, Shield, Zap, RefreshCw, CheckCircle, XCircle, Clock, AlertTriangle } from 'lucide-react';
+import { ArrowRight, ArrowUpDown, TrendingUp, Shield, Zap, RefreshCw, CheckCircle, XCircle, Clock, AlertTriangle, Wallet, Network } from 'lucide-react';
+import { useAppKitAccount, useAppKitNetwork } from '@reown/appkit/react';
+import { useToast } from '../../hooks/use-toast';
 
 interface Token {
   address: string;
@@ -119,6 +121,19 @@ export const MultiChainSwap: React.FC = () => {
   const [slippageTolerance, setSlippageTolerance] = useState<number>(0.5);
   const [strategy, setStrategy] = useState<'atomic' | 'optimistic' | 'hybrid'>('atomic');
   const [activeTab, setActiveTab] = useState<string>('swap');
+
+  // AppKit wallet integration
+  const { address, isConnected } = useAppKitAccount();
+  const { caipNetwork } = useAppKitNetwork();
+  const { toast } = useToast();
+
+  // Update userAddress when wallet connects
+  useEffect(() => {
+    if (address) {
+      setUserAddress(address);
+      loadUserSwaps();
+    }
+  }, [address]);
 
   const chains: Chain[] = [
     { id: 'ethereum', name: 'Ethereum', chainId: 1, icon: '🔷', color: '#627EEA', type: 'evm', isL1: true },

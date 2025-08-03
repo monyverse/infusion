@@ -1,6 +1,34 @@
+'use client';
+
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
 import { Button } from '../ui/button';
+import { Input } from '../ui/input';
+import { Badge } from '../ui/badge';
+import { Progress } from '../ui/progress';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
+import { Alert, AlertDescription } from '../ui/alert';
+import { 
+  Brain, 
+  Zap, 
+  Shield, 
+  TrendingUp, 
+  RefreshCw, 
+  Play, 
+  Pause, 
+  Settings, 
+  Activity,
+  Wallet,
+  Network,
+  Target,
+  BarChart3,
+  AlertTriangle,
+  CheckCircle,
+  Clock
+} from 'lucide-react';
+import { useAppKitAccount, useAppKitNetwork } from '@reown/appkit/react';
+import { useToast } from '../../hooks/use-toast';
 import { AchievementCard, Achievement } from '../gamification/achievement-card';
 
 export interface AIAgent {
