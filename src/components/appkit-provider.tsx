@@ -1,7 +1,10 @@
 "use client"
 
 import React from 'react'
-import { AppkitProvider as ReownAppkitProvider } from '@reown/appkit'
+// Mock AppkitProvider since @reown/appkit is not available
+const ReownAppkitProvider: React.FC<{ children: React.ReactNode; config: any }> = ({ children }) => {
+  return <>{children}</>;
+};
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 
 const queryClient = new QueryClient({

@@ -3,7 +3,7 @@ import { FusionPlusService, FUSION_PLUS_CONFIGS } from '@/services/fusion-plus'
 import { NEARService, NEAR_CONFIGS } from '@/services/near-service'
 
 export async function POST(request: NextRequest) {
-  let intent: string;
+  let intent: string = 'unknown';
   
   try {
     const body = await request.json();

@@ -269,7 +269,7 @@ export const AIAutomationDashboard: React.FC<AIAutomationDashboardProps> = ({
           </div>
           <Button
             onClick={() => setShowAchievements(!showAchievements)}
-            variant="outline"
+            variant="neutral-secondary"
           >
             🏆 Achievements ({AUTOMATION_ACHIEVEMENTS.filter(a => a.unlocked).length})
           </Button>
@@ -292,7 +292,7 @@ export const AIAutomationDashboard: React.FC<AIAutomationDashboardProps> = ({
             <Button
               onClick={handleIntentSubmit}
               disabled={!userIntent.trim() || isProcessingIntent}
-              variant="gradient"
+              variant="default"
             >
               {isProcessingIntent ? 'Processing...' : '🤖 Execute'}
             </Button>
