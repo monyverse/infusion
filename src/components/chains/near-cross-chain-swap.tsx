@@ -376,7 +376,7 @@ export const NEARCrossChainSwap: React.FC<NEARCrossChainSwapProps> = ({
           onClick={handleGetQuote}
           disabled={quoteLoading || !fromAmount || !userAddress || !nearAccountId}
           className="flex-1"
-          variant="outline"
+          variant="neutral-secondary"
         >
           {quoteLoading ? 'Getting Quote...' : 'Get Quote'}
         </Button>

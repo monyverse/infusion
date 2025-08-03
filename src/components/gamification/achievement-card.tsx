@@ -172,7 +172,7 @@ export const AchievementCard: React.FC<AchievementCardProps> = ({
         >
           <Button
             onClick={() => onClaim(achievement.id)}
-            variant="gradient"
+            variant="default"
             size="sm"
             className="w-full"
           >

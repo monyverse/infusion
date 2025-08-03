@@ -147,14 +147,12 @@ export function DashboardGrid() {
             <div className="flex items-center justify-between mb-4">
               <div className={`p-2 rounded-lg ${
                 metric.changeType === 'positive' ? 'bg-green-500/20 text-green-400' :
-                metric.changeType === 'negative' ? 'bg-red-500/20 text-red-400' :
                 'bg-blue-500/20 text-blue-400'
               }`}>
                 {metric.icon}
               </div>
               <div className={`text-sm font-medium ${
                 metric.changeType === 'positive' ? 'text-green-400' :
-                metric.changeType === 'negative' ? 'text-red-400' :
                 'text-blue-400'
               }`}>
                 {metric.change}
