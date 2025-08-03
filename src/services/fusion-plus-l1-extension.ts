@@ -678,9 +678,11 @@ export class StarknetService implements L1ChainService {
   private provider: any;
   private account: any;
   private contract: any;
+  private logger: any;
 
   constructor(config: { rpcUrl: string; accountAddress: string; privateKey: string }) {
     // Initialize Starknet provider
+    this.logger = console;
   }
 
   async initialize(): Promise<void> {
@@ -727,7 +729,10 @@ export class StarknetService implements L1ChainService {
   async getSwapQuote(params: SwapQuoteParams): Promise<SwapQuote> {
     this.logger.info('Getting Starknet swap quote', params);
     return {
-      toAmount: params.toAmount || '0',
+      fromToken: params.fromToken,
+      toToken: params.toToken,
+      fromAmount: params.fromAmount,
+      toAmount: '0',
       price: '1.0',
       gasEstimate: '50000',
       protocols: ['starknet'],
@@ -744,18 +749,13 @@ export class StarknetService implements L1ChainService {
 
   async executeSwap(params: SwapParams): Promise<string> {
     this.logger.info('Executing Starknet swap', params);
-    return {
-      txHash: `0x${Math.random().toString(36).substr(2, 64)}`,
-      status: 'success',
-      amount: params.toAmount,
-      gasUsed: '50000'
-    };
+    return `0x${Math.random().toString(36).substr(2, 64)}`;
   }
 
   async getSupportedTokens(): Promise<TokenInfo[]> {
     return [
-      { address: '0x0000000000000000000000000000000000000000', symbol: 'ETH', decimals: 18 },
-      { address: '0x1234567890123456789012345678901234567890', symbol: 'USDC', decimals: 6 }
+      { address: '0x0000000000000000000000000000000000000000', symbol: 'ETH', name: 'Ethereum', decimals: 18 },
+      { address: '0x1234567890123456789012345678901234567890', symbol: 'USDC', name: 'USD Coin', decimals: 6 }
     ];
   }
 
@@ -768,9 +768,11 @@ export class StarknetService implements L1ChainService {
 export class CardanoService implements L1ChainService {
   private client: any;
   private wallet: any;
+  private logger: any;
 
   constructor(config: { rpcUrl: string; walletAddress: string }) {
     // Initialize Cardano client
+    this.logger = console;
   }
 
   async initialize(): Promise<void> {
@@ -817,7 +819,10 @@ export class CardanoService implements L1ChainService {
   async getSwapQuote(params: SwapQuoteParams): Promise<SwapQuote> {
     this.logger.info('Getting Cardano swap quote', params);
     return {
-      toAmount: params.toAmount || '0',
+      fromToken: params.fromToken,
+      toToken: params.toToken,
+      fromAmount: params.fromAmount,
+      toAmount: '0',
       price: '1.0',
       gasEstimate: '50000',
       protocols: ['cardano'],
@@ -834,18 +839,13 @@ export class CardanoService implements L1ChainService {
 
   async executeSwap(params: SwapParams): Promise<string> {
     this.logger.info('Executing Cardano swap', params);
-    return {
-      txHash: `0x${Math.random().toString(36).substr(2, 64)}`,
-      status: 'success',
-      amount: params.toAmount,
-      gasUsed: '50000'
-    };
+    return `0x${Math.random().toString(36).substr(2, 64)}`;
   }
 
   async getSupportedTokens(): Promise<TokenInfo[]> {
     return [
-      { address: 'lovelace', symbol: 'ADA', decimals: 6 },
-      { address: '0x1234567890123456789012345678901234567890', symbol: 'USDC', decimals: 6 }
+      { address: 'lovelace', symbol: 'ADA', name: 'Cardano', decimals: 6 },
+      { address: '0x1234567890123456789012345678901234567890', symbol: 'USDC', name: 'USD Coin', decimals: 6 }
     ];
   }
 
@@ -858,9 +858,11 @@ export class CardanoService implements L1ChainService {
 export class XRPLedgerService implements L1ChainService {
   private client: any;
   private wallet: any;
+  private logger: any;
 
   constructor(config: { rpcUrl: string; walletAddress: string }) {
     // Initialize XRP Ledger client
+    this.logger = console;
   }
 
   async initialize(): Promise<void> {
@@ -907,7 +909,10 @@ export class XRPLedgerService implements L1ChainService {
   async getSwapQuote(params: SwapQuoteParams): Promise<SwapQuote> {
     this.logger.info('Getting XRP Ledger swap quote', params);
     return {
-      toAmount: params.toAmount || '0',
+      fromToken: params.fromToken,
+      toToken: params.toToken,
+      fromAmount: params.fromAmount,
+      toAmount: '0',
       price: '1.0',
       gasEstimate: '50000',
       protocols: ['xrp-ledger'],
@@ -924,18 +929,13 @@ export class XRPLedgerService implements L1ChainService {
 
   async executeSwap(params: SwapParams): Promise<string> {
     this.logger.info('Executing XRP Ledger swap', params);
-    return {
-      txHash: `0x${Math.random().toString(36).substr(2, 64)}`,
-      status: 'success',
-      amount: params.toAmount,
-      gasUsed: '50000'
-    };
+    return `0x${Math.random().toString(36).substr(2, 64)}`;
   }
 
   async getSupportedTokens(): Promise<TokenInfo[]> {
     return [
-      { address: 'XRP', symbol: 'XRP', decimals: 6 },
-      { address: '0x1234567890123456789012345678901234567890', symbol: 'USDC', decimals: 6 }
+      { address: 'XRP', symbol: 'XRP', name: 'Ripple', decimals: 6 },
+      { address: '0x1234567890123456789012345678901234567890', symbol: 'USDC', name: 'USD Coin', decimals: 6 }
     ];
   }
 
@@ -948,9 +948,11 @@ export class XRPLedgerService implements L1ChainService {
 export class ICPService implements L1ChainService {
   private agent: any;
   private canister: any;
+  private logger: any;
 
   constructor(config: { rpcUrl: string; canisterId: string }) {
     // Initialize ICP agent
+    this.logger = console;
   }
 
   async initialize(): Promise<void> {
@@ -997,7 +999,10 @@ export class ICPService implements L1ChainService {
   async getSwapQuote(params: SwapQuoteParams): Promise<SwapQuote> {
     this.logger.info('Getting ICP swap quote', params);
     return {
-      toAmount: params.toAmount || '0',
+      fromToken: params.fromToken,
+      toToken: params.toToken,
+      fromAmount: params.fromAmount,
+      toAmount: '0',
       price: '1.0',
       gasEstimate: '50000',
       protocols: ['icp'],
@@ -1014,18 +1019,13 @@ export class ICPService implements L1ChainService {
 
   async executeSwap(params: SwapParams): Promise<string> {
     this.logger.info('Executing ICP swap', params);
-    return {
-      txHash: `0x${Math.random().toString(36).substr(2, 64)}`,
-      status: 'success',
-      amount: params.toAmount,
-      gasUsed: '50000'
-    };
+    return `0x${Math.random().toString(36).substr(2, 64)}`;
   }
 
   async getSupportedTokens(): Promise<TokenInfo[]> {
     return [
-      { address: 'ICP', symbol: 'ICP', decimals: 8 },
-      { address: '0x1234567890123456789012345678901234567890', symbol: 'USDC', decimals: 6 }
+      { address: 'ICP', symbol: 'ICP', name: 'Internet Computer', decimals: 8 },
+      { address: '0x1234567890123456789012345678901234567890', symbol: 'USDC', name: 'USD Coin', decimals: 6 }
     ];
   }
 
@@ -1038,9 +1038,11 @@ export class ICPService implements L1ChainService {
 export class TezosService implements L1ChainService {
   private client: any;
   private wallet: any;
+  private logger: any;
 
   constructor(config: { rpcUrl: string; walletAddress: string }) {
     // Initialize Tezos client
+    this.logger = console;
   }
 
   async initialize(): Promise<void> {
@@ -1087,7 +1089,10 @@ export class TezosService implements L1ChainService {
   async getSwapQuote(params: SwapQuoteParams): Promise<SwapQuote> {
     this.logger.info('Getting Tezos swap quote', params);
     return {
-      toAmount: params.toAmount || '0',
+      fromToken: params.fromToken,
+      toToken: params.toToken,
+      fromAmount: params.fromAmount,
+      toAmount: '0',
       price: '1.0',
       gasEstimate: '50000',
       protocols: ['tezos'],
@@ -1104,18 +1109,13 @@ export class TezosService implements L1ChainService {
 
   async executeSwap(params: SwapParams): Promise<string> {
     this.logger.info('Executing Tezos swap', params);
-    return {
-      txHash: `0x${Math.random().toString(36).substr(2, 64)}`,
-      status: 'success',
-      amount: params.toAmount,
-      gasUsed: '50000'
-    };
+    return `0x${Math.random().toString(36).substr(2, 64)}`;
   }
 
   async getSupportedTokens(): Promise<TokenInfo[]> {
     return [
-      { address: 'XTZ', symbol: 'XTZ', decimals: 6 },
-      { address: '0x1234567890123456789012345678901234567890', symbol: 'USDC', decimals: 6 }
+      { address: 'XTZ', symbol: 'XTZ', name: 'Tezos', decimals: 6 },
+      { address: '0x1234567890123456789012345678901234567890', symbol: 'USDC', name: 'USD Coin', decimals: 6 }
     ];
   }
 
@@ -1128,9 +1128,11 @@ export class TezosService implements L1ChainService {
 export class PolkadotService implements L1ChainService {
   private api: any;
   private wallet: any;
+  private logger: any;
 
   constructor(config: { rpcUrl: string; walletAddress: string }) {
     // Initialize Polkadot API
+    this.logger = console;
   }
 
   async initialize(): Promise<void> {
@@ -1177,7 +1179,10 @@ export class PolkadotService implements L1ChainService {
   async getSwapQuote(params: SwapQuoteParams): Promise<SwapQuote> {
     this.logger.info('Getting Polkadot swap quote', params);
     return {
-      toAmount: params.toAmount || '0',
+      fromToken: params.fromToken,
+      toToken: params.toToken,
+      fromAmount: params.fromAmount,
+      toAmount: '0',
       price: '1.0',
       gasEstimate: '50000',
       protocols: ['polkadot'],
@@ -1194,18 +1199,13 @@ export class PolkadotService implements L1ChainService {
 
   async executeSwap(params: SwapParams): Promise<string> {
     this.logger.info('Executing Polkadot swap', params);
-    return {
-      txHash: `0x${Math.random().toString(36).substr(2, 64)}`,
-      status: 'success',
-      amount: params.toAmount,
-      gasUsed: '50000'
-    };
+    return `0x${Math.random().toString(36).substr(2, 64)}`;
   }
 
   async getSupportedTokens(): Promise<TokenInfo[]> {
     return [
-      { address: 'DOT', symbol: 'DOT', decimals: 10 },
-      { address: '0x1234567890123456789012345678901234567890', symbol: 'USDC', decimals: 6 }
+      { address: 'DOT', symbol: 'DOT', name: 'Polkadot', decimals: 10 },
+      { address: '0x1234567890123456789012345678901234567890', symbol: 'USDC', name: 'USD Coin', decimals: 6 }
     ];
   }
 
@@ -1492,6 +1492,7 @@ export class FusionPlusL1Extension {
           fromToken: request.fromToken,
           toToken: request.toToken,
           fromAmount: request.fromAmount,
+          toAmount: request.fromAmount, // Use fromAmount as default toAmount for quote
           userAddress: request.userAddress
         });
         return {
